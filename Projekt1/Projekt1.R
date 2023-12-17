@@ -15,3 +15,13 @@ df <- prepare_dataset_for_project1('apartments_pl_2023_08.csv',
                                    c('id', 'floor', 'latitude', 'longitude',
                                      'ownership','buildingMaterial', 'condition'))
 View(df)
+
+ggplot(df, aes(x = buildYear, y = squareMeters, color = type)) + # nazwy miast i typów budynków jeszcze zmienię
+  geom_point(alpha = 0.5) +
+  facet_wrap(~city) +
+  ggtitle("Powierzchnia mieszkań w zależności od roku budowy i typu budynku")+
+  labs(x = 'Rok budowy',
+       y = 'Powierzchnia [m\u00B2]',
+       color = 'Typ budynku') +
+  theme(legend.background = element_rect(color = 'black', fill = 'grey95'),
+        legend.position = c(0.87, 0.12))
