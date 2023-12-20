@@ -25,3 +25,13 @@ ggplot(df, aes(x = buildYear, y = squareMeters, color = type)) + # nazwy miast i
        color = 'Typ budynku') +
   theme(legend.background = element_rect(color = 'black', fill = 'grey95'),
         legend.position = c(0.87, 0.12))
+
+ggplot (df, aes(x = hasElevator, y = floorCount, fill = type)) +
+  geom_bar (position = 'dodge', stat = 'identity') +
+  facet_wrap(~city) +
+  ggtitle('Zależność między liczbą pięter, typem budynku i obecnością windy') +
+  labs(x = 'Winda',
+       y = 'Liczba pięter',
+       fill = 'Typ budynku') +
+  theme(legend.background = element_rect(color = 'black', fill = 'grey95'),
+        legend.position = c(0.87, 0.12))
