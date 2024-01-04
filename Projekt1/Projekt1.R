@@ -57,7 +57,7 @@ buildings_with_elevator <- ggplot(as.data.frame(count_buildings_with_elevator), 
   labs(x = 'Liczba pięter',
        y = 'Liczba mieszkań',
        fill = 'Typ budynku') +
-  xlim(0,20) +
+  scale_x_continuous(breaks = 1:20, limits=c(0, 21)) +
   geom_text(aes(label = ifelse(Frequency >= 58, Frequency, '')), size = 2.5, position = position_stack(vjust = 0.5))
 
 # Wykres kolumnowy pokazujący liczbę mieszkań nieposiadających windy w zależności od liczby pięter
@@ -67,7 +67,7 @@ buildings_without_elevator <- ggplot(as.data.frame(count_buildings_without_eleva
   labs(x = 'Liczba pięter',
        y = 'Liczba mieszkań',
        fill = 'Typ budynku') +
-  xlim(0,20) +
+  scale_x_continuous(breaks = 1:20, limits=c(0, 21)) +
   geom_text(aes(label = ifelse(Frequency >= 114, Frequency, '')), size = 2.5, position = position_stack(vjust = 0.5))
 
 # Wyświetlanie dwóch wykresów jeden nad drugim -- wersja z legendą na wykresach (legenda nie zabiera dodatkowego miejsca)
@@ -80,11 +80,17 @@ plot_grid(buildings_with_elevator + theme(legend.background = element_rect(color
 # Przygotowanie danych do wykresów dotyczących ceny za metr kwadratowy
 median_price_per_sqm <- as.data.frame(tapply(df$price / df$squareMeters, df$city, median))
 
-median_range <- ifelse(median_price_per_sqm < 7000, '< 7000',
+first_interval <- paste0("[", floor(min(median_price_per_sqm)), ", ", 7000, ")")
+last_interval <- paste0("[", 11500, ", ", ceiling(max(median_price_per_sqm)), ")")
+
+median_range <- ifelse(median_price_per_sqm < 7000, first_interval,
                        ifelse(median_price_per_sqm >= 7000 & median_price_per_sqm < 9000, '[7000, 9000)',
-                              ifelse(median_price_per_sqm >= 9000 & median_price_per_sqm < 11500, '[9000, 11500)', '> 11500')))
+                              ifelse(median_price_per_sqm >= 9000 & median_price_per_sqm < 11500, '[9000, 11500)',
+                                     last_interval)))
 
 df_city_and_range <- data.frame(city = rownames(median_range), range = unname(median_range))
+
+df_city_and_range$range <- factor(df_city_and_range$range, levels = c(first_interval, '[7000, 9000)', '[9000, 11500)', last_interval))
 
 df_for_boxplots <- merge(x = df[ , c('city', 'price', 'squareMeters')], y = df_city_and_range, by = 'city', all = TRUE)
 
