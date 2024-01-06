@@ -1,0 +1,53 @@
+
+#Histogramy dotyczące odlgłości od mieszkań do najbliższych POI
+library(ggplot2)
+library(cowplot)
+
+prepare_dataset_for_project1 <- function(filename, columns_to_remove){
+  df <- read_csv(filename)
+  df <- df[ , !(names(df) %in% columns_to_remove)]
+  df <- drop_na(df)
+  return(df)
+}
+
+df <- prepare_dataset_for_project1('j:/Downloads/apartments_pl_2023_08.csv',
+                                   c('floor', 'latitude', 'longitude',
+                                     'ownership','buildingMaterial', 'condition'))
+
+
+# Określenie zakresów osi x i y
+xlim_range <- c(0, 5)
+ylim_range <- c(0, 5500)
+
+# Wektora z nazwami POI
+distance_columns <- c("schoolDistance", "clinicDistance", "postOfficeDistance", 
+                      "kindergartenDistance", "restaurantDistance", 
+                      "collegeDistance", "pharmacyDistance")
+
+# Utworzenie nowej tabeli zawierającej wybrane kolumny
+selected_distances <- df[, distance_columns]
+
+# Nazwy dla histogramów
+hist_titles <- c("Szkoła", "Przychodnia", "Poczta", "Przedszkole", "Restauracja", "Uniwersytet", "Apteka")
+
+# Tworzenie wielu histogramów na jednym wykresie
+par(mfrow = c(3, 3), mar = c(5, 4, 2, 0), oma = c(0, 0, 4, 0))
+
+# Tworzenie histogramów
+for (i in 1:length(distance_columns)) {
+  hist_result <- hist(selected_distances[[i]], 
+                      main = paste(hist_titles[i]),
+                      xlab = paste("km"),  
+                      ylab = "Liczba mieszkań",
+                      col = "lightblue",
+                      xlim = xlim_range,
+                      ylim = ylim_range)
+  
+  # Dodanie wartości z osi y nad słupkami
+  text(hist_result$mids, hist_result$counts, labels = hist_result$counts, pos = 3, col = "#0000CD", cex = 0.8)
+}
+
+
+# Tytuł główny
+mtext("Odległość od mieszkań do najbliższych POI (Points Of Interest)", outer = TRUE, line = 1.2, cex = 1.8)
+
