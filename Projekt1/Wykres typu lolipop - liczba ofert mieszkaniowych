@@ -1,0 +1,66 @@
+
+dg <- read_csv("j:/Downloads/apartments_pl_2023_08_with_population.csv")
+
+
+library(dplyr)
+
+# Wyznaczanie liczby ofert przypadającej na jednego mieszkańca
+df <- dg %>%
+  group_by(city) %>%
+  summarise(total_offers = length(id), total_population = first(population)) %>%
+  mutate(offer_per_person = total_offers / total_population)
+
+
+
+library(dplyr)
+library(ggplot2)
+
+#Wykres typu Lolipop
+
+# Wykres dla total_offers
+plot_offers <- df %>%
+  filter(!is.na(total_offers)) %>%
+  arrange(total_offers) %>%
+  mutate(city = factor(city, city)) %>%
+  ggplot(aes(x = city, y = total_offers)) +
+  geom_segment(aes(x = city, xend = city, y = 0, yend = total_offers), color = "grey") +
+  geom_point(size = 3, color = "#69b3a2") +
+  geom_text(aes(x = city, y = total_offers, label = total_offers), hjust = -0.2, vjust = 0.5) + # vjust - odległość wartości od lolipa (góra/dół)
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0.6)
+  ) +
+  xlab("Miasto") +
+  ylab("Liczba ofert") +
+  ggtitle("Liczba ofert mieszkaniowych w poszczególnych miastach")
+
+# Wykres dla total_population
+plot_population <- df %>%
+  filter(!is.na(total_offers) & !is.na(total_population)) %>%
+  arrange(total_population) %>%
+  mutate(city = factor(city, city)) %>%
+  ggplot() +
+  geom_segment(aes(x = city, xend = city, y = 0, yend = total_population), color = "orange") +
+  geom_point(aes(x = city, y = total_population), size = 3, color = "orange") +                          # vjust - odległość wartości od lolipa (góra/dół)
+  geom_text(aes(x = city, y = total_population, label = total_population), hjust = -0.2, vjust = 0.5) +  # hjust - odległość wartości od lolipa(prawo/lewo)
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0.6)
+  ) +
+  xlab("Miasto") +
+  ylab("Liczba mieszkańców") +
+  ggtitle("Liczba mieszkańców w poszczególnych miastach")
+
+# Łączenie wykresów w siatkę
+plot_grid(plot_offers, plot_population, ncol = 2, align = "h")
+
