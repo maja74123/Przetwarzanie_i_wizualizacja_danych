@@ -110,6 +110,7 @@ df_for_boxplots <- merge(x = df[ , c('city', 'price', 'squareMeters')], y = df_c
 ggplot(df_for_boxplots, aes(x = price / squareMeters, y = city, fill = range)) +
   geom_boxplot(alpha = 0.8,
                outlier.size = 2) +
+  scale_x_continuous(breaks = 5000 * (1:6)) +
   scale_y_discrete(limits = rev) +
   scale_fill_manual(values = c( 'orchid', 'goldenrod1' ,'royalblue1', 'olivedrab3')) +
   ggtitle('Cena za m\u00B2 z podziałem na miasta') +
