@@ -92,8 +92,9 @@ plot_grid(buildings_with_elevator + theme(legend.background = element_rect(color
 # Przygotowanie danych do wykresów dotyczących ceny za metr kwadratowy
 median_price_per_sqm <- as.data.frame(tapply(df$price / df$squareMeters, df$city, median))
 
-first_interval <- paste0("[", floor(min(median_price_per_sqm)), ", ", 7000, ")")
+first_interval <- paste0("(", floor(min(median_price_per_sqm)), ", ", 7000, ")")
 last_interval <- paste0("[", 11500, ", ", ceiling(max(median_price_per_sqm)), ")")
+# Skrajne wartości nie należą do przedziałów, ponieważ obliczono je jako podłogę i sufit.
 
 median_range <- ifelse(median_price_per_sqm < 7000, first_interval,
                        ifelse(median_price_per_sqm >= 7000 & median_price_per_sqm < 9000, '[7000, 9000)',
