@@ -46,8 +46,16 @@ count_buildings_with_elevator <- df %>%
   group_by(floorCount, type) %>% 
   summarise('Frequency' = sum(hasElevator == 'yes'))
 
+total_count_with_elevator <- df %>% 
+  group_by(floorCount) %>% 
+  summarise('Frequency' = sum(hasElevator == 'yes'))
+
 count_buildings_without_elevator <- df %>%
   group_by(floorCount, type) %>%
+  summarise('Frequency' = sum(hasElevator == 'no'))
+
+total_count_without_elevator <- df %>%
+  group_by(floorCount) %>%
   summarise('Frequency' = sum(hasElevator == 'no'))
 
 # Wykres kolumnowy pokazujący liczbę mieszkań posiadających windę w zależności od liczby pięter
@@ -58,7 +66,9 @@ buildings_with_elevator <- ggplot(as.data.frame(count_buildings_with_elevator), 
        y = 'Liczba mieszkań',
        fill = 'Typ budynku') +
   scale_x_continuous(breaks = 1:20, limits=c(0, 21)) +
-  geom_text(aes(label = ifelse(Frequency >= 58, Frequency, '')), size = 2.5, position = position_stack(vjust = 0.5))
+  geom_text(aes(label = ifelse(Frequency >= 58, Frequency, '')), size = 2.6, position = position_stack(vjust = 0.5)) +
+  geom_text(inherit.aes = FALSE, data = total_count_with_elevator, 
+            aes(x = floorCount, y = Frequency, label = Frequency), size = 2.9, vjust = -0.5)
 
 # Wykres kolumnowy pokazujący liczbę mieszkań nieposiadających windy w zależności od liczby pięter
 buildings_without_elevator <- ggplot(as.data.frame(count_buildings_without_elevator), aes(x = floorCount, y = Frequency, fill = type)) +
@@ -68,7 +78,9 @@ buildings_without_elevator <- ggplot(as.data.frame(count_buildings_without_eleva
        y = 'Liczba mieszkań',
        fill = 'Typ budynku') +
   scale_x_continuous(breaks = 1:20, limits=c(0, 21)) +
-  geom_text(aes(label = ifelse(Frequency >= 114, Frequency, '')), size = 2.5, position = position_stack(vjust = 0.5))
+  geom_text(aes(label = ifelse(Frequency >= 114, Frequency, '')), size = 2.6, position = position_stack(vjust = 0.5)) +
+  geom_text(inherit.aes = FALSE, data = total_count_without_elevator, 
+            aes(x = floorCount, y = Frequency, label = Frequency), size = 2.9, vjust = -0.5)
 
 # Wyświetlanie dwóch wykresów jeden nad drugim -- wersja z legendą na wykresach (legenda nie zabiera dodatkowego miejsca)
 plot_grid(buildings_with_elevator + theme(legend.background = element_rect(color = 'black', fill = 'grey95'),
