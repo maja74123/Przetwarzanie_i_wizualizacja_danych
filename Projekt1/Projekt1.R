@@ -30,6 +30,31 @@ df$type <- recode(df$type,
                   "blockOfFlats" = "Blok mieszkalny",
                   "tenement" = "Kamienica")
 
+# Dane dotyczące liczby ludności pochodzą z https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultaktualnosci/5468/7/20/1/powierzchnia_i_ludnosc_w_przekroju_terytorialnym_w_2023_roku_tablice.xlsx
+data_population <- "city population
+Białystok 292600
+Bydgoszcz 330038
+Częstochowa 208282
+Gdańsk 486345
+Gdynia 242874
+Katowice 280190
+Kraków 803282
+Lublin 331243
+Łódź 658444
+Poznań 541316
+Radom 197848
+Rzeszów 197181
+Szczecin 391566
+Warszawa 1861975
+Wrocław 674079"
+
+df_city_and_population <- as.data.frame(read_delim(data_population, delim = " ", col_names = TRUE, trim_ws = TRUE))
+
+df_with_population <- merge(x = df, y = df_city_and_population, by = 'city', all = TRUE)
+
+# Tworzenie pliku zawierającego df z populacją
+# write.csv(df_with_population, "apartments_pl_2023_08_with_population.csv", row.names = TRUE)
+
 # Wykresy punktowe pokazujące zależność między powierzchnią mieszkań a rokiem budowy i typem budynku (z podziałem na miasta)
 ggplot(df, aes(x = buildYear, y = squareMeters, color = type)) +
   geom_point(alpha = 0.5) +
