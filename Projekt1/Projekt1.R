@@ -106,9 +106,9 @@ buildings_with_elevator <- ggplot(as.data.frame(count_buildings_with_elevator),
        y = 'Liczba mieszkań',
        fill = 'Typ budynku') +
   scale_x_continuous(breaks = 1:20, limits=c(0, 21)) +
-  geom_text(aes(label = ifelse(Frequency >= 35, Frequency, '')),
+  geom_text(aes(label = ifelse(Frequency >= 39, Frequency, '')),
             size = 2.6, position = position_stack(vjust = 0.5)) +
-  geom_text(inherit.aes = FALSE, data = total_count_with_elevator, 
+  geom_text(inherit.aes = FALSE, data = total_count_with_elevator[1:20, ], 
             aes(x = floorCount, y = Frequency, label = Frequency),
             size = 2.9, vjust = -0.5)
 
@@ -126,7 +126,7 @@ buildings_without_elevator <- ggplot(as.data.frame(count_buildings_without_eleva
   scale_x_continuous(breaks = 1:20, limits=c(0, 21)) +
   geom_text(aes(label = ifelse(Frequency >= 114, Frequency, '')),
             size = 2.6, position = position_stack(vjust = 0.5)) +
-  geom_text(inherit.aes = FALSE, data = total_count_without_elevator, 
+  geom_text(inherit.aes = FALSE, data = total_count_without_elevator[1:20, ], 
             aes(x = floorCount, y = Frequency, label = Frequency),
             size = 2.9, vjust = -0.5)
 
