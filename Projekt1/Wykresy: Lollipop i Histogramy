@@ -1,0 +1,116 @@
+library(readr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+
+prepare_dataset_for_project1 <- function(filename, columns_to_remove){
+  df <- read_csv(filename)
+  # usuwamy kolumny, które nie są nam potrzebne lub zawierały zbyt dużo braków
+  df <- df[ , !(names(df) %in% columns_to_remove)]
+  # usuwamy wiersze, które miały brakujące wartości
+  df <- drop_na(df)
+  return(df)
+}
+
+df <- prepare_dataset_for_project1('j:/Downloads/apartments_pl_2023_08.csv',
+                                   c('floor', 'latitude', 'longitude',
+                                     'ownership','buildingMaterial', 'condition'))
+View(df)
+
+df$city <- recode(df$city,
+                  'bialystok' = 'Białystok', 'bydgoszcz' = 'Bydgoszcz', 'czestochowa' = 'Częstochowa',
+                  'gdansk' = 'Gdańsk', 'gdynia' = 'Gdynia', 'katowice' = 'Katowice',
+                  'krakow' = 'Kraków', 'lodz' = 'Łódź', 'lublin' = 'Lublin',
+                  'poznan' = 'Poznań', 'radom' = 'Radom', 'rzeszow' = 'Rzeszów',
+                  'szczecin' = 'Szczecin', 'warszawa' = 'Warszawa', 'wroclaw' = 'Wrocław')
+
+df$type <- recode(df$type,
+                  'apartmentBuilding' = 'Apartamentowiec',
+                  'blockOfFlats' = 'Blok mieszkalny',
+                  'tenement' = 'Kamienica')
+
+# Dane dotyczące liczby ludności pochodzą z https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultaktualnosci/5468/7/20/1/powierzchnia_i_ludnosc_w_przekroju_terytorialnym_w_2023_roku_tablice.xlsx
+data_population <- "city population
+Białystok 292600
+Bydgoszcz 330038
+Częstochowa 208282
+Gdańsk 486345
+Gdynia 242874
+Katowice 280190
+Kraków 803282
+Lublin 331243
+Łódź 658444
+Poznań 541316
+Radom 197848
+Rzeszów 197181
+Szczecin 391566
+Warszawa 1861975
+Wrocław 674079"
+
+df_city_and_population <- as.data.frame(read_delim(data_population, delim = " ", col_names = TRUE, trim_ws = TRUE))
+
+df_with_population <- merge(x = df, y = df_city_and_population, by = 'city', all = TRUE)
+
+# Określenie zakresów osi x i y
+xlim_range <- c(0, 5)
+ylim_range <- c(0, 5500)
+
+# Wektor z nazwami POI
+distance_columns <- c("schoolDistance", "clinicDistance", "postOfficeDistance", 
+                      "kindergartenDistance", "restaurantDistance", 
+                      "collegeDistance", "pharmacyDistance")
+
+# Utworzenie nowej tabeli zawierającej wybrane kolumny
+selected_distances <- df[, distance_columns]
+
+# Nazwy dla histogramów
+hist_titles <- c("Szkoła", "Przychodnia", "Poczta", "Przedszkole", "Restauracja", "Uniwersytet", "Apteka")
+
+# Tworzenie wielu histogramów na jednym wykresie
+par(mfrow = c(3, 3), mar = c(5, 4, 2, 0), oma = c(0, 0, 4, 0))
+
+# Tworzenie histogramów
+for (i in 1:length(distance_columns)) {
+  hist_result <- hist(selected_distances[[i]], 
+                      main = paste(hist_titles[i]),
+                      xlab = paste("km"),  
+                      ylab = "Liczba mieszkań",
+                      col = "lightblue",
+                      xlim = xlim_range,
+                      ylim = ylim_range)
+  
+  # Dodanie wartości z osi y nad słupkami
+  text(hist_result$mids, hist_result$counts, labels = hist_result$counts, pos = 3, col = "#0000CD", cex = 0.8)
+}
+
+# Tytuł główny
+mtext("Odległość od mieszkań do najbliższych POI (Points Of Interest)", outer = TRUE, line = 1.2, cex = 1.8)
+
+# Wyznaczanie liczby ofert przypadającej na tysiąc mieszkańców
+df_offers_per_1000_people <- df_with_population %>%
+  group_by(city) %>%
+  summarise(total_offers = length(id), total_population = first(population)) %>%
+  mutate(offers_per_1000_people = round((1000 * total_offers / total_population), 2))
+
+# Wykres typu Lollipop
+df_offers_per_1000_people %>%
+  arrange(offers_per_1000_people) %>%
+  mutate(city = factor(city, city)) %>%
+  ggplot(aes(x = offers_per_1000_people, y = city)) +
+  geom_segment(aes(x = 0, xend = offers_per_1000_people,
+                   y = city, yend = city),
+               color = "grey", linewidth = 1.5) +
+  geom_point(size = 4, color = "#69b3a2") +
+  xlim(0, floor(max(df_offers_per_1000_people$offers_per_1000_people)) + 1) +
+  geom_text(aes(x = offers_per_1000_people, y = city, label = offers_per_1000_people),
+            hjust = -0.4, vjust = 0.3) + # vjust - odległość wartości od lolipa (góra/dół)
+  theme_minimal() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    plot.title.position = "plot",
+    plot.title = element_text(hjust = 0.6)) +
+  xlab("Liczba ofert na 1000 mieszkańców") +
+  ylab("Miasto") +
+  ggtitle("Liczba ofert na 1000 mieszkańców w poszczególnych miastach")
