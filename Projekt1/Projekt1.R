@@ -3,6 +3,7 @@ library(tidyr)
 library(ggplot2)
 library(dplyr)
 library(cowplot)
+library(reshape2)
 
 prepare_dataset_for_project1 <- function(filename, columns_to_remove){
   df <- read_csv(filename)
@@ -265,3 +266,44 @@ df_offers_per_1000_people %>%
   xlab('Liczba ofert na 1000 mieszkańców') +
   ylab('Miasto') +
   ggtitle('Liczba ofert na 1000 mieszkańców w poszczególnych miastach')
+
+# Mapa cieplna macierzy korelacji
+correlation_matrix <- cor(df[sapply(df, is.numeric)])
+correlation_matrix_half <- correlation_matrix
+correlation_matrix_half[lower.tri(correlation_matrix_half)] <- NA
+
+Polish_names <- c('Powierzchnia', 'Liczba pokoi',
+                  'Liczba pięter', 'Rok budowy',
+                  'Odległość od centrum', 'Liczba POI',
+                  'Odległość od szkoły', 'Odległość od przychodni',
+                  'Odległość od poczty', 'Odległość od przedszkola',
+                  'Odległość od restauracji', 'Odległość od uczelni',
+                  'Odległość od apteki', 'Cena')
+
+row.names(correlation_matrix_half) <- Polish_names
+colnames(correlation_matrix_half) <- Polish_names
+
+correlation_matrix_half <- correlation_matrix_half[, colnames(correlation_matrix_half) != 'Rok budowy']
+correlation_matrix_half <- correlation_matrix_half[row.names(correlation_matrix_half) != 'Rok budowy', ]
+
+df_for_heatmap <- melt(correlation_matrix_half, na.rm = TRUE)
+rounded_values <- round(df_for_heatmap$value, 2)
+
+ggplot(df_for_heatmap, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = 'blue', high = 'red', mid = 'white', 
+                       midpoint = 0, limit = c(-1,1), space = 'Lab', 
+                       name = 'Współczynnik korelacji Pearsona') +
+  labs(title = 'Mapa cieplna macierzy korelacji') +
+  geom_text(aes(label = rounded_values), color = 'black', size = 3.8) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        panel.grid.major = element_blank(),
+        legend.justification = c(1, 0),
+        legend.position = c(0.9, 0.15),
+        legend.direction = 'horizontal') +
+  guides(fill = guide_colorbar(barwidth = 13, barheight = 1,
+                               title.position = 'top', title.hjust = 0.5)) +
+  coord_fixed()
