@@ -14,8 +14,7 @@ prepare_dataset_for_project2 <- function(filename, columns_to_remove){
 }
 
 df <- prepare_dataset_for_project2('apartments_pl_2023_08.csv',
-                                   c('floor', 'latitude',
-                                     'longitude', 'ownership',
+                                   c('floor', 'ownership',
                                      'buildingMaterial', 'condition'))
 View(df)
 
