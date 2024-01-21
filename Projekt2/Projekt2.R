@@ -3,6 +3,7 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(plotly)
+library(leaflet)
 
 prepare_dataset_for_project2 <- function(filename, columns_to_remove){
   df <- read_csv(filename)
@@ -32,6 +33,18 @@ df$type <- recode(df$type,
                   'apartmentBuilding' = 'Apartamentowiec',
                   'blockOfFlats' = 'Blok mieszkalny',
                   'tenement' = 'Kamienica')
+
+df$hasParkingSpace <- recode(df$hasParkingSpace,
+                             'yes' = 'Tak',
+                             'no' = 'Nie')
+
+df$hasBalcony <- recode(df$hasBalcony,
+                        'yes' = 'Tak',
+                        'no' = 'Nie')
+
+df$hasElevator <- recode(df$hasElevator,
+                         'yes' = 'Tak',
+                         'no' = 'Nie')
 
 # Przygotowanie danych do wykresów dotyczących ceny za metr kwadratowy
 median_price_per_sqm <- as.data.frame(tapply(df$price / df$squareMeters,
@@ -79,3 +92,21 @@ plot_ly(data = df_for_boxplots,
                        x = 0.785,
                        y = 0.98),
          colorway = c("orchid", "goldenrod1", "royalblue1", "olivedrab3"))
+
+# Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
+leaflet(data = df) %>% 
+  addTiles() %>% 
+  addMarkers(~longitude, ~latitude,
+             popup = ~paste('Miasto:', city,
+                            '<br>Cena:', price, 'zł',
+                            '<br>Typ budynku', type,
+                            '<br>Powierzchnia:', squareMeters, 'm\u00B2',
+                            '<br>Liczba pokoi:', rooms,
+                            '<br>Piętro:', floorCount,
+                            '<br>Rok budowy:', buildYear,
+                            '<br>Odległość od centrum:', centreDistance, 'km',
+                            '<br>Winda:', hasElevator,
+                            '<br>Parking:', hasParkingSpace,
+                            '<br>Balkon:', hasBalcony),
+             label = ~paste('Cena:', price, 'zł'),
+             clusterOptions = markerClusterOptions())
