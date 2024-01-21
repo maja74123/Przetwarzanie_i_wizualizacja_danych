@@ -78,12 +78,12 @@ plot_ly(data = df_for_boxplots,
         x = ~price / squareMeters,
         y = ~city,
         fillcolor = ~range,
-        type = "box",
-        hoverinfo = "x") %>%
-  layout(title = "Cena za m\u00B2 z podziałem na miasta",
-         xaxis = list(title = "Cena za m\u00B2 [zł]",
-                      tickformat = "digits"),
-         yaxis = list(title = list(text = "Miasto",
+        type = 'box',
+        hoverinfo = 'x') %>%
+  layout(title = 'Cena za m\u00B2 z podziałem na miasta',
+         xaxis = list(title = 'Cena za m\u00B2 [zł]',
+                      tickformat = 'digits'),
+         yaxis = list(title = list(text = 'Miasto',
                                    standoff = 0),
                       autorange = 'reversed'),
          legend = list(title = list(text='Wartość mediany'),
@@ -91,22 +91,45 @@ plot_ly(data = df_for_boxplots,
                        borderwidth = 1,
                        x = 0.785,
                        y = 0.98),
-         colorway = c("orchid", "goldenrod1", "royalblue1", "olivedrab3"))
+         colorway = c('orchid', 'goldenrod1', 'royalblue1', 'olivedrab3'))
 
 # Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
 leaflet(data = df) %>% 
-  addTiles() %>% 
+  addTiles() %>%
   addMarkers(~longitude, ~latitude,
              popup = ~paste('Miasto:', city,
-                            '<br>Cena:', price, 'zł',
-                            '<br>Typ budynku', type,
+                            '<br>Typ budynku:', type,
+                            '<br>Cena:', price / 1000, 'tys. zł',
                             '<br>Powierzchnia:', squareMeters, 'm\u00B2',
-                            '<br>Liczba pokoi:', rooms,
-                            '<br>Piętro:', floorCount,
+                            '<br>Cena za m\u00B2:', round((price / squareMeters), 2), 'zł',
                             '<br>Rok budowy:', buildYear,
+                            '<br>Piętro:', floorCount,
+                            '<br>Liczba pokoi:', rooms,
                             '<br>Odległość od centrum:', centreDistance, 'km',
                             '<br>Winda:', hasElevator,
                             '<br>Parking:', hasParkingSpace,
                             '<br>Balkon:', hasBalcony),
-             label = ~paste('Cena:', price, 'zł'),
+             label = ~paste('Cena za m\u00B2:', round((price / squareMeters), 2), 'zł'),
              clusterOptions = markerClusterOptions())
+
+# Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
+# (znaczniki w zależności od typu budynku)
+leaflet(data = df) %>% 
+  addTiles() %>%
+  addCircleMarkers(~longitude, ~latitude,
+                   popup = ~paste('Miasto:', city,
+                                  '<br>Typ budynku:', type,
+                                  '<br>Cena:', price / 1000, 'tys. zł',
+                                  '<br>Powierzchnia:', squareMeters, 'm\u00B2',
+                                  '<br>Cena za m\u00B2:', round((price / squareMeters), 2), 'zł',
+                                  '<br>Rok budowy:', buildYear,
+                                  '<br>Piętro:', floorCount,
+                                  '<br>Liczba pokoi:', rooms,
+                                  '<br>Odległość od centrum:', centreDistance, 'km',
+                                  '<br>Winda:', hasElevator,
+                                  '<br>Parking:', hasParkingSpace,
+                                  '<br>Balkon:', hasBalcony),
+                   label = ~paste('Cena za m\u00B2:', round((price / squareMeters), 2), 'zł'),
+                   color = ~ ifelse(type == 'Kamienica', 'blue',
+                                    ifelse(type == 'Apartamentowiec', 'red', 'green')),
+                   clusterOptions = markerClusterOptions())
