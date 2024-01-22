@@ -104,6 +104,11 @@ icons_colors <- iconList('apartamentowiec' = makeIcon('icons/marker_icon_red.png
                        'kamienica' = makeIcon('icons/marker_icon_blue.png', iconWidth = 24, iconHeight =32),
                        'blok mieszkalny' = makeIcon('icons/marker_icon_green.png', iconWidth = 24, iconHeight =32))
 
+# Przygotowanie legendy
+html_legend <- "<img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_red.png'>apartamentowiec<br/>
+<img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_green.png'>blok mieszkalny<br/>
+<img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_blue.png'>kamienica"
+
 # Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
 leaflet(data = df) %>% 
   addTiles() %>%
@@ -121,7 +126,8 @@ leaflet(data = df) %>%
                             '<br>Udogodnienia:', amenities),
              popupOptions = popupOptions(autoClose = FALSE, closeOnClick = FALSE),
              label = ~paste('Cena za m\u00B2:', round((price / squareMeters), 2), 'zł'),
-             clusterOptions = markerClusterOptions())
+             clusterOptions = markerClusterOptions()) %>% 
+  addControl(html = html_legend, position = "bottomright")
 
 # Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
 # (znaczniki w zależności od typu budynku)
