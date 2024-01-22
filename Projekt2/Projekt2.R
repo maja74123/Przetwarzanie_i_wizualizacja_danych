@@ -30,21 +30,9 @@ df$city <- recode(df$city,
                   'wroclaw' = 'Wrocław')
 
 df$type <- recode(df$type,
-                  'apartmentBuilding' = 'Apartamentowiec',
-                  'blockOfFlats' = 'Blok mieszkalny',
-                  'tenement' = 'Kamienica')
-
-df$hasParkingSpace <- recode(df$hasParkingSpace,
-                             'yes' = 'Tak',
-                             'no' = 'Nie')
-
-df$hasBalcony <- recode(df$hasBalcony,
-                        'yes' = 'Tak',
-                        'no' = 'Nie')
-
-df$hasElevator <- recode(df$hasElevator,
-                         'yes' = 'Tak',
-                         'no' = 'Nie')
+                  'apartmentBuilding' = 'apartamentowiec',
+                  'blockOfFlats' = 'blok mieszkalny',
+                  'tenement' = 'kamienica')
 
 # Przygotowanie danych do wykresów dotyczących ceny za metr kwadratowy
 median_price_per_sqm <- as.data.frame(tapply(df$price / df$squareMeters,
@@ -93,6 +81,24 @@ plot_ly(data = df_for_boxplots,
                        y = 0.98),
          colorway = c('orchid', 'goldenrod1', 'royalblue1', 'olivedrab3'))
 
+# Przygotowanie kolumny z udogodnieniami
+amenities_columns <- c('hasElevator', 'hasParkingSpace', 'hasBalcony', 'hasSecurity', 'hasStorageRoom')
+amenities_names <- c('winda', 'parking', 'balkon', 'ochrona', 'komórka lokatorska')
+
+prepare_amenities_strings <- function(amenities_names, boolean_selector) {
+  amenities_strings <- c()
+  for(i in 1:nrow(boolean_selector)) {
+    if(any(boolean_selector[i, ])) {
+      amenities_strings <- c(amenities_strings, paste(amenities_names[boolean_selector[i, ]], collapse = ', '))
+    } else {
+      amenities_strings <- c(amenities_strings, 'brak')
+    }
+  }
+  return(amenities_strings)
+}
+
+df$amenities <- prepare_amenities_strings(amenities_names, df[, amenities_columns] == 'yes')
+
 # Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
 leaflet(data = df) %>% 
   addTiles() %>%
@@ -106,9 +112,7 @@ leaflet(data = df) %>%
                             '<br>Piętro:', floorCount,
                             '<br>Liczba pokoi:', rooms,
                             '<br>Odległość od centrum:', centreDistance, 'km',
-                            '<br>Winda:', hasElevator,
-                            '<br>Parking:', hasParkingSpace,
-                            '<br>Balkon:', hasBalcony),
+                            '<br>Udogodnienia:', amenities),
              popupOptions = popupOptions(autoClose = FALSE, closeOnClick = FALSE),
              label = ~paste('Cena za m\u00B2:', round((price / squareMeters), 2), 'zł'),
              clusterOptions = markerClusterOptions())
@@ -127,10 +131,8 @@ leaflet(data = df) %>%
                                   '<br>Piętro:', floorCount,
                                   '<br>Liczba pokoi:', rooms,
                                   '<br>Odległość od centrum:', centreDistance, 'km',
-                                  '<br>Winda:', hasElevator,
-                                  '<br>Parking:', hasParkingSpace,
-                                  '<br>Balkon:', hasBalcony),
+                                  '<br>Udogodnienia:', amenities),
                    label = ~paste('Cena za m\u00B2:', round((price / squareMeters), 2), 'zł'),
-                   color = ~ ifelse(type == 'Kamienica', 'blue',
-                                    ifelse(type == 'Apartamentowiec', 'red', 'green')),
+                   color = ~ ifelse(type == 'kamienica', 'blue',
+                                    ifelse(type == 'apartamentowiec', 'red', 'green')),
                    clusterOptions = markerClusterOptions())
