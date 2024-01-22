@@ -100,16 +100,21 @@ prepare_amenities_strings <- function(amenities_names, boolean_selector) {
 df$amenities <- prepare_amenities_strings(amenities_names, df[, amenities_columns] == 'yes')
 
 # Przygotowanie różnokolorowych znaczników
+# sposób został zaczerpnięty z:
+# https://stackoverflow.com/questions/32940617/change-color-of-leaflet-marker
 icons_colors <- iconList('apartamentowiec' = makeIcon('icons/marker_icon_red.png', iconWidth = 24, iconHeight =32),
                        'kamienica' = makeIcon('icons/marker_icon_blue.png', iconWidth = 24, iconHeight =32),
                        'blok mieszkalny' = makeIcon('icons/marker_icon_green.png', iconWidth = 24, iconHeight =32))
 
-# Przygotowanie legendy
+# Przygotowanie legendy (kolor znacznika)
+# sposób został zaczerpnięty z:
+# https://stackoverflow.com/questions/37862467/leaflet-legend-for-custom-markers-in-r
 html_legend <- "<img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_red.png'>apartamentowiec<br/>
 <img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_green.png'>blok mieszkalny<br/>
 <img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_blue.png'>kamienica"
 
 # Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
+# (znaczniki-pinezki, kolory zależą od typu budynku)
 leaflet(data = df) %>% 
   addTiles() %>%
   addMarkers(~longitude, ~latitude,
@@ -130,7 +135,7 @@ leaflet(data = df) %>%
   addControl(html = html_legend, position = "bottomright")
 
 # Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
-# (znaczniki w zależności od typu budynku)
+# (okrągłe znaczniki -- kolory zależą od typu budynku)
 leaflet(data = df) %>% 
   addTiles() %>%
   addCircleMarkers(~longitude, ~latitude,
