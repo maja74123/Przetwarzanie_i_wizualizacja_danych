@@ -109,6 +109,7 @@ leaflet(data = df) %>%
                             '<br>Winda:', hasElevator,
                             '<br>Parking:', hasParkingSpace,
                             '<br>Balkon:', hasBalcony),
+             popupOptions = popupOptions(autoClose = FALSE, closeOnClick = FALSE),
              label = ~paste('Cena za m\u00B2:', round((price / squareMeters), 2), 'zł'),
              clusterOptions = markerClusterOptions())
 
