@@ -99,10 +99,16 @@ prepare_amenities_strings <- function(amenities_names, boolean_selector) {
 
 df$amenities <- prepare_amenities_strings(amenities_names, df[, amenities_columns] == 'yes')
 
+# Przygotowanie różnokolorowych znaczników
+icons_colors <- iconList('apartamentowiec' = makeIcon('icons/marker_icon_red.png', iconWidth = 24, iconHeight =32),
+                       'kamienica' = makeIcon('icons/marker_icon_blue.png', iconWidth = 24, iconHeight =32),
+                       'blok mieszkalny' = makeIcon('icons/marker_icon_green.png', iconWidth = 24, iconHeight =32))
+
 # Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
 leaflet(data = df) %>% 
   addTiles() %>%
   addMarkers(~longitude, ~latitude,
+             icon = ~icons_colors[type],
              popup = ~paste('Miasto:', city,
                             '<br>Typ budynku:', type,
                             '<br>Cena:', price / 1000, 'tys. zł',
