@@ -1,4 +1,5 @@
-
+library(readr)
+library(tidyr)
 # ramka danych z latitude, longitude, city, total_offers
 dg <- read_csv("j:/Downloads/apartments_pl_2023_08_with_population.csv")
 
@@ -23,8 +24,6 @@ dc$city <- recode(dc$city,
                   "poznan" = "Poznań", "radom" = "Radom", "rzeszow" = "Rzeszów",
                   "szczecin" = "Szczecin", "warszawa" = "Warszawa", "wroclaw" = "Wrocław")
 
-View(dc)
-
 
 
 library(dplyr)
@@ -35,8 +34,6 @@ df <- dg %>%
   summarise(total_offers = length(id), total_population = first(population)) %>%
   mutate(offer_per_person = total_offers / total_population)
 
-View(df)
-
 
 fff <- dc %>%
   distinct(city, .keep_all = TRUE)
@@ -44,17 +41,10 @@ fff <- dc %>%
 # Wybieranie tylko kolumn city, longitude i latitude
 fff <- select(fff, city, longitude, latitude)
 
-View(fff)
-
-
 
 
 sorted_city_data <- fff %>%
   arrange(city)
-
-# sortowanie ramki danych
-View(sorted_city_data)
-
 
 
 # Połączenie ramek
@@ -70,7 +60,7 @@ View(data1)
 
 
 # Mapa 
-
+library(ggplot2)
 library(sf)
 library(cartography)
 
@@ -94,7 +84,7 @@ ggplot() +
     aes(x = longitude, y = latitude, size = total_population, color = total_offers),
     alpha = 1,
     shape = 16,  # kształt punktu 
-    stroke = 3 # szerokość obwódki
+    stroke = 3 # szerokość konturu
   ) +
   
   # Skala wielkości punktów
