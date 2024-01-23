@@ -104,7 +104,7 @@ df$amenities <- prepare_amenities_strings(amenities_names, df[, amenities_column
 # https://stackoverflow.com/questions/32940617/change-color-of-leaflet-marker
 icons_colors <- iconList('apartamentowiec' = makeIcon('icons/marker_icon_red.png', iconWidth = 24, iconHeight =32),
                        'kamienica' = makeIcon('icons/marker_icon_blue.png', iconWidth = 24, iconHeight =32),
-                       'blok mieszkalny' = makeIcon('icons/marker_icon_purple.png', iconWidth = 24, iconHeight =32))
+                       'blok mieszkalny' = makeIcon('icons/marker_icon_orange.png', iconWidth = 24, iconHeight =32))
 
 # niebieski znacznik został pobrany z:
 # https://unpkg.com/browse/leaflet@1.3.1/dist/images/marker-icon.png
@@ -114,7 +114,7 @@ icons_colors <- iconList('apartamentowiec' = makeIcon('icons/marker_icon_red.png
 # sposób został zaczerpnięty z:
 # https://stackoverflow.com/questions/37862467/leaflet-legend-for-custom-markers-in-r
 html_legend <- "<img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_red.png'>apartamentowiec<br/>
-<img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_purple.png'>blok mieszkalny<br/>
+<img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_orange.png'>blok mieszkalny<br/>
 <img src='https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_blue.png'>kamienica"
 
 # Interaktywna mapa Polski z zaznaczonymi mieszkaniami i wyskakującymi informacjami o nich
