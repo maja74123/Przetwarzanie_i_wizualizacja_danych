@@ -1,0 +1,106 @@
+
+# ramka danych z latitude, longitude, city, total_offers
+dg <- read_csv("j:/Downloads/apartments_pl_2023_08_with_population.csv")
+
+prepare_dataset_for_project1 <- function(filename, columns_to_remove){
+  dc <- read_csv(filename)
+  # usuwamy kolumny, które nie są nam potrzebne lub zawierały zbyt dużo braków
+  dc <- dc[ , !(names(dc) %in% columns_to_remove)]
+  # usuwamy wiersze, które miały brakujące wartości
+  dc <- drop_na(dc)
+  return(dc)
+}
+
+dc <- prepare_dataset_for_project1('j:/Downloads/apartments_pl_2023_08.csv',
+                                   c('floor',
+                                     'ownership','buildingMaterial', 'condition'))
+
+
+dc$city <- recode(dc$city,
+                  "bialystok" = "Białystok", "bydgoszcz" = "Bydgoszcz", "czestochowa" = "Częstochowa",
+                  "gdansk" = "Gdańsk", "gdynia" = "Gdynia", "katowice" = "Katowice",
+                  "krakow" = "Kraków", "lodz" = "Łódź", "lublin" = "Lublin",
+                  "poznan" = "Poznań", "radom" = "Radom", "rzeszow" = "Rzeszów",
+                  "szczecin" = "Szczecin", "warszawa" = "Warszawa", "wroclaw" = "Wrocław")
+
+View(dc)
+
+
+
+library(dplyr)
+
+# Wyznaczanie liczby ofert przypadającej na jednego mieszkańca
+df <- dg %>%
+  group_by(city) %>%
+  summarise(total_offers = length(id), total_population = first(population)) %>%
+  mutate(offer_per_person = total_offers / total_population)
+
+View(df)
+
+
+fff <- dc %>%
+  distinct(city, .keep_all = TRUE)
+
+# Wybieranie tylko kolumn city, longitude i latitude
+fff <- select(fff, city, longitude, latitude)
+
+View(fff)
+
+
+
+
+sorted_city_data <- fff %>%
+  arrange(city)
+
+# sortowanie ramki danych
+View(sorted_city_data)
+
+
+
+# Połączenie ramek
+data1 <- left_join(df, sorted_city_data, by = "city")
+View(data1)
+
+
+
+
+
+
+
+
+
+# Mapa 
+
+library(sf)
+library(cartography)
+
+# Ścieżka do pliku shapefile z granicami gmin w Polsce, dane pobrane ze strony https://dane.gov.pl/pl/dataset/726,panstwowy-rejestr-granic-i-powierzchni-jednostek-podziaow-terytorialnych-kraju/resource/29515/table
+path_to_gpkg_or_shapefile <- "j:/Downloads/granicePolski/A01_Granice_wojewodztw.shp"  
+
+# Wczytanie danych do obiektu sf
+poland_gminy <- st_read(path_to_gpkg_or_shapefile, quiet = TRUE)
+
+
+# Rysowanie granic gmin
+ggplot() +
+  geom_sf(data = poland_gminy, fill = "grey80", color = "grey") +
+  xlab('')+
+  ylab('')+
+  ggtitle('Liczba ofert w zależności od populacji miasta')+
+  
+  # Dodanie punktów
+  geom_point(
+    data = data1,
+    aes(x = longitude, y = latitude, size = total_population, color = total_offers),
+    alpha = 1,
+    shape = 16,  # kształt punktu 
+    stroke = 3 # szerokość obwódki
+  ) +
+  
+  # Skala wielkości punktów
+  scale_size_continuous(name = "Population", breaks = seq(0, max(data1$total_population), by = 450000), labels = scales::comma) +
+  
+  # Skala kolorów punktów
+  scale_color_gradient(name = "Total Offers", low = "blue", high = "pink") +
+  theme_minimal() +
+  theme(legend.position = "right", legend.box = "vertical")
