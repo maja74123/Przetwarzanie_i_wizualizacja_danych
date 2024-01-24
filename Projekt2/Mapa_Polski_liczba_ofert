@@ -59,6 +59,7 @@ View(data1)
 
 
 
+
 # Mapa 
 library(ggplot2)
 library(sf)
@@ -86,11 +87,28 @@ ggplot() +
     shape = 16,  # kształt punktu 
     stroke = 3 # szerokość konturu
   ) +
+  geom_text(
+    data = data1,
+    aes(x = longitude, y = latitude, label = city),
+    vjust = 2.5, # pozycja tekstu
+    hjust = 0.5, # pozycja tekstu
+    size = 3,    # rozmiar tekstu
+    color = "black",
+    check_overlap = TRUE
+  ) +
+  
+  geom_text(
+    data = subset(data1, city == "Gdynia"),
+    aes(x = longitude, y = latitude, label = city),
+    vjust = -1.5, # regulacja pozycji tekstu nad punktem
+    hjust = 0.5, # regulacja pozycji tekstu nad punktem
+    size = 3,    # rozmiar tekstu
+    color = "black") +
   
   # Skala wielkości punktów
-  scale_size_continuous(name = "Population", breaks = seq(0, max(data1$total_population), by = 450000), labels = scales::comma) +
+  scale_size_continuous(name = "Populacja", breaks = seq(0, max(data1$total_population), by = 450000), labels = scales::comma) +
   
   # Skala kolorów punktów
-  scale_color_gradient(name = "Total Offers", low = "blue", high = "pink") +
+  scale_color_gradient(name = "Liczba ofert", low = "blue", high = "pink") +
   theme_minimal() +
   theme(legend.position = "right", legend.box = "vertical")
