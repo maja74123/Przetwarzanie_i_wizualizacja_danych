@@ -94,7 +94,7 @@ ggplot() +
     hjust = 0.5, # pozycja tekstu
     size = 3,    # rozmiar tekstu
     color = "black",
-    check_overlap = TRUE
+    check_overlap = TRUE #punkty nie nachodzą na siebie
   ) +
   
   geom_text(
