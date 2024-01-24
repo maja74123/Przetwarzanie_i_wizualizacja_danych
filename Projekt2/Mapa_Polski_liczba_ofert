@@ -109,6 +109,6 @@ ggplot() +
   scale_size_continuous(name = "Populacja", breaks = seq(0, max(data1$total_population), by = 450000), labels = scales::comma) +
   
   # Skala kolorów punktów
-  scale_color_gradient(name = "Liczba ofert", low = "blue", high = "red") +
+  scale_color_gradient(name = "Liczba ofert", low = "blue", high = 'firebrick1') +
   theme_minimal() +
   theme(legend.position = "right", legend.box = "vertical")
