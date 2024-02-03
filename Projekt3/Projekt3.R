@@ -155,7 +155,7 @@ ui <- fluidPage(
              
              tabPanel("Mapa interaktywna",
                       tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
-                      mainPanel(leafletOutput("interactive_map"))
+                      mainPanel(leafletOutput("interactive_map", height='80vh'))
              ),
              
              tabPanel("Porównanie",
