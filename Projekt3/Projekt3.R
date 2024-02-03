@@ -57,6 +57,7 @@ df_october <- prepare_dataset_for_project3('apartments_pl_2023_10_with_populatio
 df_november <- prepare_dataset_for_project3('apartments_pl_2023_11_with_population.csv')
 df_december <- prepare_dataset_for_project3('apartments_pl_2023_12_with_population.csv')
 df_january <- prepare_dataset_for_project3('apartments_pl_2024_01_with_population.csv')
+df_february <- prepare_dataset_for_project3('apartments_pl_2024_02_with_population.csv')
 df <- df_august
 
 # Przygotowanie różnokolorowych znaczników (do mapy leaflet)
@@ -114,7 +115,7 @@ comparison_plot_features <- c(
 )
 
 datasets_months_options <- c("Sierpień 2023", "Wrzesień 2023", "Październik 2023",
-                             "Listopad 2023", "Grudzień 2023", "Styczeń 2024")
+                             "Listopad 2023", "Grudzień 2023", "Styczeń 2024", "Luty 2024")
 
 
 project_description_string <- "
@@ -188,7 +189,8 @@ server <- function(input, output) {
                  "Październik 2023" = df_october,
                  "Listopad 2023" = df_november,
                  "Grudzień 2023" = df_december,
-                 "Styczeń 2024" = df_january)
+                 "Styczeń 2024" = df_january,
+                 "Luty 2024" = df_february)
     
     ggplot(df, mapping = aes_string(x = input$xaxis, y = input$yaxis)) +
       geom_point(size = 3)
@@ -201,7 +203,8 @@ server <- function(input, output) {
                  "Październik 2023" = df_october,
                  "Listopad 2023" = df_november,
                  "Grudzień 2023" = df_december,
-                 "Styczeń 2024" = df_january)
+                 "Styczeń 2024" = df_january,
+                 "Luty 2024" = df_february)
     
     leaflet(data = df) %>% 
       addTiles() %>%
@@ -231,7 +234,8 @@ server <- function(input, output) {
                  "Październik 2023" = df_october,
                  "Listopad 2023" = df_november,
                  "Grudzień 2023" = df_december,
-                 "Styczeń 2024" = df_january)
+                 "Styczeń 2024" = df_january,
+                 "Luty 2024" = df_february)
     
     df_for_table <- df[ , !(names(df) %in% c("...1", "id", "schoolDistance", "clinicDistance","postOfficeDistance",
                                              "kindergartenDistance", "restaurantDistance", "pharmacyDistance", "hasParkingSpace",
