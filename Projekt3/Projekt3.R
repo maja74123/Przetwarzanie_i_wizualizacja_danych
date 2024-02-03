@@ -85,6 +85,41 @@ html_legend <- '<img src="https://raw.githubusercontent.com/maja74123/Przetwarza
 <img src="https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_blue.png">kamienica'
 
 
+prepare_median_ranges_for_boxplots <- function(df) {
+  # Przygotowanie danych do wykresów dotyczących ceny za metr kwadratowy
+  median_price_per_sqm <- as.data.frame(tapply(df$price / df$squareMeters,
+                                               df$city,
+                                               median))
+  
+  first_interval <- paste0('(', floor(min(median_price_per_sqm)), ', ', 7000, ')')
+  last_interval <- paste0('[', 11500, ', ', ceiling(max(median_price_per_sqm)), ')')
+  # Skrajne wartości nie należą do przedziałów, ponieważ obliczono je jako podłogę i sufit.
+  
+  median_range <- ifelse(median_price_per_sqm < 7000, first_interval,
+                         ifelse(median_price_per_sqm >= 7000 & median_price_per_sqm < 9000, '[7000, 9000)',
+                                ifelse(median_price_per_sqm >= 9000 & median_price_per_sqm < 11500, '[9000, 11500)',
+                                       last_interval)))
+  
+  df_city_and_range <- data.frame(city = rownames(median_range),
+                                  range = unname(median_range))
+  
+  df_city_and_range$range <- factor(df_city_and_range$range,
+                                    levels = c(first_interval,
+                                               '[7000, 9000)',
+                                               '[9000, 11500)',
+                                               last_interval))
+  
+  df_for_boxplots <- merge(x = df[ , c('city', 'price', 'squareMeters')],
+                           y = df_city_and_range,
+                           by = 'city', all = TRUE)
+  
+  return(df_for_boxplots)
+}
+
+df_august_for_boxplots <- prepare_median_ranges_for_boxplots(df_august)
+
+
+
 ### ui ###
 
 comparison_plot_features <- c(
@@ -168,6 +203,13 @@ ui <- fluidPage(
                       mainPanel(plotOutput("compare_plot"))
              ),
              
+             tabPanel("Wykresy pudełkowe",
+                      sidebarPanel(
+                        selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
+                      ),
+                      mainPanel(plotlyOutput("boxplot"))
+             ),
+             
              tabPanel("Zbiór danych",
                       tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
                       mainPanel(dataTableOutput("dataset_table"))
@@ -241,9 +283,47 @@ server <- function(input, output) {
                                              "kindergartenDistance", "restaurantDistance", "pharmacyDistance", "hasParkingSpace",
                                              "hasBalcony", "hasElevator", "hasSecurity", "hasStorageRoom"))]
     
+    df_for_table$latitude <- round(df_for_table$latitude, 2)
+    df_for_table$longitude <- round(df_for_table$longitude, 2)
+    
     datatable(df_for_table, colnames = c("Miasto", "Typ budynku", "Powierzchnia [m\u00B2]", "Liczba pokoi", "Liczba pięter", "Rok budowy",
                                          "Szerokość geograficzna", "Długość gegraficzna", "Odległość od centrum [km]", "Liczba POI",
                                          "Odległość od uczelni [km]", "Cena [zł]", "Populacja", "Udogodnienia"))
+  })
+  
+  
+  
+  output$boxplot <- renderPlotly({
+    
+    df_for_boxplots <- switch(input$boxplot_dataset,
+                 "Sierpień 2023" = prepare_median_ranges_for_boxplots(df_august),
+                 "Wrzesień 2023" = prepare_median_ranges_for_boxplots(df_september),
+                 "Październik 2023" = prepare_median_ranges_for_boxplots(df_october),
+                 "Listopad 2023" = prepare_median_ranges_for_boxplots(df_november),
+                 "Grudzień 2023" = prepare_median_ranges_for_boxplots(df_december),
+                 "Styczeń 2024" = prepare_median_ranges_for_boxplots(df_january),
+                 "Luty 2024" = prepare_median_ranges_for_boxplots(df_february)
+    )
+    
+    # Interaktywne wykresy pudełkowe pokazujące cenę za metr kwadratowy z podziałem na miasta
+    plot_ly(data = df_for_boxplots,
+            x = ~price / squareMeters,
+            y = ~city,
+            fillcolor = ~range,
+            type = 'box',
+            hoverinfo = 'x') %>%
+      layout(title = list(text = 'Cena za m\u00B2 z podziałem na miasta', y = 0.99),
+             xaxis = list(title = 'Cena za m\u00B2 [zł]',
+                          tickformat = 'digits'),
+             yaxis = list(title = list(text = 'Miasto',
+                                       standoff = 0),
+                          autorange = 'reversed'),
+             legend = list(title = list(text='Wartość mediany'),
+                           bordercolor = 'grey',
+                           borderwidth = 1,
+                           x = 0.85,
+                           y = 0.98),
+             colorway = c('orchid', 'goldenrod1', 'royalblue1', 'olivedrab3'))
   })
   
   
