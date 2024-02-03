@@ -1,7 +1,3 @@
-# TODO
-# round latitude and longitude
-# 
-
 library(shiny)
 library(shinythemes)
 library(DT)
@@ -12,6 +8,7 @@ library(leaflet)
 library(tidyr)
 library(dplyr)
 library(readr)
+library(reshape2)
 
 
 amenities_columns <- c('hasElevator', 'hasParkingSpace', 'hasBalcony',
@@ -210,6 +207,13 @@ ui <- fluidPage(
                       mainPanel(plotlyOutput("boxplot"))
              ),
              
+             tabPanel("Mapa cieplna",
+                      # sidebarPanel(
+                      #   selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
+                      # ),
+                      mainPanel(plotOutput("heatmap"), height='80vh')
+             ),
+             
              tabPanel("Zbiór danych",
                       tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
                       mainPanel(dataTableOutput("dataset_table"))
@@ -326,7 +330,52 @@ server <- function(input, output) {
              colorway = c('orchid', 'goldenrod1', 'royalblue1', 'olivedrab3'))
   })
   
-  
+  output$heatmap <- renderPlot({
+    df_for_heatmap <- df[ , !(names(df) %in% c("...1", "population", "latitude", "longitude"))]
+    
+    
+    # Mapa cieplna macierzy korelacji
+    correlation_matrix <- cor(df_for_heatmap[sapply(df_for_heatmap, is.numeric)])
+    correlation_matrix_half <- correlation_matrix
+    correlation_matrix_half[lower.tri(correlation_matrix_half)] <- NA
+    
+    Polish_names <- c('Powierzchnia', 'Liczba pokoi',
+                      'Liczba pięter', 'Rok budowy',
+                      'Odległość od centrum', 'Liczba POI',
+                      'Odległość od szkoły', 'Odległość od przychodni',
+                      'Odległość od poczty', 'Odległość od przedszkola',
+                      'Odległość od restauracji', 'Odległość od uczelni',
+                      'Odległość od apteki', 'Cena')
+
+    row.names(correlation_matrix_half) <- Polish_names
+    colnames(correlation_matrix_half) <- Polish_names
+
+    correlation_matrix_half <- correlation_matrix_half[, colnames(correlation_matrix_half) != 'Rok budowy']
+    correlation_matrix_half <- correlation_matrix_half[row.names(correlation_matrix_half) != 'Rok budowy', ]
+
+    df_for_heatmap <- melt(correlation_matrix_half, na.rm = TRUE)
+    rounded_values <- round(df_for_heatmap$value, 2)
+    
+    ggplot(df_for_heatmap, aes(x = Var1, y = Var2, fill = value)) +
+      geom_tile() +
+      scale_fill_gradient2(low = 'blue', high = 'red', mid = 'white',
+                           midpoint = 0, limit = c(-1,1), space = 'Lab',
+                           name = 'Współczynnik korelacji Pearsona') +
+      labs(title = 'Mapa cieplna macierzy korelacji') +
+      geom_text(aes(label = rounded_values), color = 'black', size = 5) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            panel.grid.major = element_blank(),
+            legend.justification = c(1, 0),
+            legend.position = c(0.9, 0.15),
+            legend.direction = 'horizontal') +
+      guides(fill = guide_colorbar(barwidth = 13, barheight = 1,
+                                   title.position = 'top', title.hjust = 0.5)) +
+      coord_fixed()
+  },
+  height = 850, width = 850)
   
 }
 
