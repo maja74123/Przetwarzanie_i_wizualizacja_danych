@@ -111,7 +111,7 @@ comparison_plot_features <- c(
   "hasStorageRoom",
   "price",
   "population"
-  )
+)
 
 datasets_months_options <- c("Sierpień 2023", "Wrzesień 2023", "Październik 2023",
                              "Listopad 2023", "Grudzień 2023", "Styczeń 2024")
@@ -125,32 +125,52 @@ project_description_string <- "
   https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland
 "
 
+
+
 #########################################################
 
 ui <- fluidPage(
   theme = shinytheme("united"),
   navbarPage("Oferty mieszkaniowe",
-    tabPanel("O projekcie",
-             sidebarPanel(helpText(project_description_string))
-    ),
-    
-    tabPanel("Mapa interaktywna",
-             tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
-             mainPanel(leafletOutput("interactive_map"))
-    ),
-    
-    tabPanel("Zbiór danych",
-             tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
-             mainPanel(dataTableOutput("dataset_table"))
+             tabPanel("O projekcie",
+                      sidebarPanel(helpText(tags$h2("O projekcie"),
+                                            HTML("<p>Korzystamy ze zbioru danych
+                                        <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>
+                                        Apartment Prices in Poland </a>
+                                        pochodzącego z platformy
+                                        <a href='https://www.kaggle.com/'> Kaggle</a>.
+                                        Zawiera on oferty sprzedaży mieszkań z 15 największych miast w Polsce
+                                        (pod względem liczby ludności) oraz najważniejsze informacje na ich temat.
+                                        <br> Ze zbioru usunęliśmy kolumny zawierające dużo braków.
+                                        <br> Dołączyliśmy dane dotyczące populacji miast. Pochodzą one ze strony internetowej
+                                        <a href='https://stat.gov.pl/obszary-tematyczne/ludnosc/ludnosc/powierzchnia-i-ludnosc-w-przekroju-terytorialnym-w-2023-roku,7,20.html'>
+                                        Głównego Urzędu Statystycznego</a>.
+                                        <br> Kod do tej aplikacji jest dostępny na
+                                        <a href='https://github.com/maja74123/Przetwarzanie_i_wizualizacja_danych/tree/main/Projekt3'>
+                                        GitHub</a>.
+                                        <br> Wybraliśmy różne atrybuty i pokazaliśmy różne zależności na wykresach i mapach,
+                                        zarówno statycznych, jak i interaktywnych.</p>")
+                      ))    
              ),
-    
-    tabPanel("Porównanie",
-             sidebarPanel(
-               selectInput("xaxis", label = "Oś x", comparison_plot_features),
-               selectInput("yaxis", label = "Oś y", comparison_plot_features)
+             
+             tabPanel("Mapa interaktywna",
+                      tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
+                      mainPanel(leafletOutput("interactive_map"))
              ),
-             mainPanel(plotOutput("compare_plot"))
-             )
+             
+             tabPanel("Porównanie",
+                      sidebarPanel(
+                        selectInput("comparison_dataset", label = "Wybierz zbiór danych", datasets_months_options),
+                        selectInput("xaxis", label = "Oś x", comparison_plot_features),
+                        selectInput("yaxis", label = "Oś y", comparison_plot_features)
+                      ),
+                      mainPanel(plotOutput("compare_plot"))
+             ),
+             
+             tabPanel("Zbiór danych",
+                      tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
+                      mainPanel(dataTableOutput("dataset_table"))
+             ),
   )
 )
 
@@ -161,6 +181,15 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   output$compare_plot <- renderPlot({
+    
+    df <- switch(input$comparison_dataset,
+                 "Sierpień 2023" = df_august,
+                 "Wrzesień 2023" = df_september,
+                 "Październik 2023" = df_october,
+                 "Listopad 2023" = df_november,
+                 "Grudzień 2023" = df_december,
+                 "Styczeń 2024" = df_january)
+    
     ggplot(df, mapping = aes_string(x = input$xaxis, y = input$yaxis)) +
       geom_point(size = 3)
   }, height = 800)
@@ -173,7 +202,7 @@ server <- function(input, output) {
                  "Listopad 2023" = df_november,
                  "Grudzień 2023" = df_december,
                  "Styczeń 2024" = df_january)
-
+    
     leaflet(data = df) %>% 
       addTiles() %>%
       addMarkers(~longitude, ~latitude,
@@ -203,15 +232,15 @@ server <- function(input, output) {
                  "Listopad 2023" = df_november,
                  "Grudzień 2023" = df_december,
                  "Styczeń 2024" = df_january)
-  
+    
     df_for_table <- df[ , !(names(df) %in% c("...1", "id", "schoolDistance", "clinicDistance","postOfficeDistance",
                                              "kindergartenDistance", "restaurantDistance", "pharmacyDistance", "hasParkingSpace",
-                                           "hasBalcony", "hasElevator", "hasSecurity", "hasStorageRoom"))]
+                                             "hasBalcony", "hasElevator", "hasSecurity", "hasStorageRoom"))]
     
-    datatable(df_for_table, colnames = c("Miasto", "Typ budynku", "Powierzchnia", "Liczba pokoi", "Liczba pięter", "Rok budowy",
-                                         "Szerokość geograficzna", "Długość gegraficzna", "Odległość od centrum", "Liczba POI",
-                                         "Odległość od uczelni", "Cena", "Populacja", "Udogodnienia"))
-    })
+    datatable(df_for_table, colnames = c("Miasto", "Typ budynku", "Powierzchnia [m\u00B2]", "Liczba pokoi", "Liczba pięter", "Rok budowy",
+                                         "Szerokość geograficzna", "Długość gegraficzna", "Odległość od centrum [km]", "Liczba POI",
+                                         "Odległość od uczelni [km]", "Cena [zł]", "Populacja", "Udogodnienia"))
+  })
   
   
   
