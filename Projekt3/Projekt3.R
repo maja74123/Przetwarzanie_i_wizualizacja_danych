@@ -191,7 +191,7 @@ ui <- fluidPage(
                       mainPanel(leafletOutput("interactive_map", height='80vh'))
              ),
              
-             tabPanel("Porównanie",
+             tabPanel("Porównanie", icon = icon("scale-unbalanced"),
                       sidebarPanel(
                         selectInput("comparison_dataset", label = "Wybierz zbiór danych", datasets_months_options),
                         selectInput("xaxis", label = "Oś x", comparison_plot_features),
@@ -207,7 +207,7 @@ ui <- fluidPage(
                       mainPanel(plotlyOutput("boxplot"))
              ),
              
-             tabPanel("Mapa cieplna",
+             tabPanel("Mapa cieplna", icon = icon("table-cells"),
                       # sidebarPanel(
                       #   selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
                       # ),
