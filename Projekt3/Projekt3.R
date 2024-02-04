@@ -169,23 +169,19 @@ ui <- fluidPage(
              tabPanel("Mapa interaktywna", icon = icon("location-dot"),
                       sidebarPanel(helpText(tags$h2("O projekcie"),
                                             HTML("<p>Korzystamy ze zbioru danych
-                                        <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>
-                                        Apartment Prices in Poland </a>
-                                        pochodzącego z platformy
-                                        <a href='https://www.kaggle.com/'> Kaggle</a>.
+                                        <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>Apartment Prices in Poland</a>
+                                        pochodzącego z platformy <a href='https://www.kaggle.com/'> Kaggle</a>.
                                         Zawiera on oferty sprzedaży mieszkań z 15 największych miast w Polsce
                                         (pod względem liczby ludności) oraz najważniejsze informacje na ich temat.
                                         <br> Ze zbioru usunęliśmy kolumny zawierające dużo braków.
                                         <br> Dołączyliśmy dane dotyczące populacji miast. Pochodzą one ze strony internetowej
                                         <a href='https://stat.gov.pl/obszary-tematyczne/ludnosc/ludnosc/powierzchnia-i-ludnosc-w-przekroju-terytorialnym-w-2023-roku,7,20.html'>
                                         Głównego Urzędu Statystycznego</a>.
-                                        <br> Kod do tej aplikacji jest dostępny na
-                                        <a href='https://github.com/maja74123/Przetwarzanie_i_wizualizacja_danych/tree/main/Projekt3'>
-                                        GitHub</a>.
-                                        <br> Wybraliśmy różne atrybuty i pokazaliśmy różne zależności na wykresach i mapach,
-                                        zarówno statycznych, jak i interaktywnych.</p>")
+                                        <br> Kod do tej aplikacji jest dostępny w repozytorium na
+                                        <a href='https://github.com/maja74123/Przetwarzanie_i_wizualizacja_danych/tree/main/Projekt3'>GitHubie</a>.
+                                        <br> Wybraliśmy różne atrybuty i pokazaliśmy różne zależności na wykresach i mapach, zarówno statycznych, jak i interaktywnych.</p>")
                       ),
-                      tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
+                      tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")),
                       ),
                       mainPanel(leafletOutput("interactive_map", height='80vh'))
              ),
@@ -197,7 +193,7 @@ ui <- fluidPage(
              
              tabPanel("Porównanie", icon = icon("scale-unbalanced"),
                       sidebarPanel(
-                        selectInput("comparison_dataset", label = "Wybierz zbiór danych", datasets_months_options),
+                        selectInput("comparison_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"),
                         selectInput("xaxis", label = "Oś x", comparison_plot_features),
                         selectInput("yaxis", label = "Oś y", comparison_plot_features)
                       ),
@@ -206,7 +202,7 @@ ui <- fluidPage(
              
              tabPanel("Wykresy pudełkowe", icon = icon("magnifying-glass-chart"),
                       tabsetPanel(
-                        selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
+                        selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")
                       ),
                       mainPanel(plotlyOutput("boxplot", height='70vh'))
              ),
@@ -219,7 +215,7 @@ ui <- fluidPage(
              ),
              
              tabPanel("Zbiór danych", icon = icon("table"),
-                      sidebarPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options), width = 2),
+                      sidebarPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"), width = 2),
                       mainPanel(dataTableOutput("dataset_table"))
              ),
   )
