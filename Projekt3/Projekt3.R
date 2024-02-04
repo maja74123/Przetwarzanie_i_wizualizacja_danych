@@ -163,6 +163,7 @@ project_description_string <- "
 #########################################################
 
 ui <- fluidPage(
+  tags$head(tags$style("* {font-family: 'Arial'}")),
   theme = shinytheme("united"),
   navbarPage("Oferty mieszkaniowe",
              tabPanel("O projekcie", icon = icon("circle-info"),
@@ -183,7 +184,7 @@ ui <- fluidPage(
                                         GitHub</a>.
                                         <br> Wybraliśmy różne atrybuty i pokazaliśmy różne zależności na wykresach i mapach,
                                         zarówno statycznych, jak i interaktywnych.</p>")
-                      ))    
+                      ))
              ),
              
              tabPanel("Mapa interaktywna", icon = icon("location-dot"),
@@ -197,25 +198,25 @@ ui <- fluidPage(
                         selectInput("xaxis", label = "Oś x", comparison_plot_features),
                         selectInput("yaxis", label = "Oś y", comparison_plot_features)
                       ),
-                      mainPanel(plotOutput("compare_plot"))
+                      mainPanel(plotOutput("compare_plot", height='80vh'))
              ),
              
              tabPanel("Wykresy pudełkowe", icon = icon("magnifying-glass-chart"),
                       tabsetPanel(
                         selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
                       ),
-                      mainPanel(plotlyOutput("boxplot"))
+                      mainPanel(plotlyOutput("boxplot", height='70vh'))
              ),
              
              tabPanel("Mapa cieplna", icon = icon("table-cells"),
                       # sidebarPanel(
                       #   selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
                       # ),
-                      mainPanel(plotOutput("heatmap"))
+                      mainPanel(plotOutput("heatmap", height='80vh'))
              ),
              
              tabPanel("Zbiór danych", icon = icon("table"),
-                      tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
+                      sidebarPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options), width = 2),
                       mainPanel(dataTableOutput("dataset_table"))
              ),
   )
@@ -240,7 +241,7 @@ server <- function(input, output) {
     
     ggplot(df, mapping = aes_string(x = input$xaxis, y = input$yaxis)) +
       geom_point(size = 3)
-  }, height = 800)
+  })
   
   output$interactive_map <- renderLeaflet({
     df <- switch(input$leaflet_dataset,
@@ -374,9 +375,8 @@ server <- function(input, output) {
       guides(fill = guide_colorbar(barwidth = 13, barheight = 1,
                                    title.position = 'top', title.hjust = 0.5)) +
       coord_fixed()
-  },
-  height = 850, width = 850)
-  
+  })
+
 }
 
 #########################################################
