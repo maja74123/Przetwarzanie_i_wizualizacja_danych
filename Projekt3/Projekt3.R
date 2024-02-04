@@ -166,7 +166,7 @@ ui <- fluidPage(
   tags$head(tags$style("* {font-family: 'Arial'}")),
   theme = shinytheme("united"),
   navbarPage("Oferty mieszkaniowe",
-             tabPanel("O projekcie", icon = icon("circle-info"),
+             tabPanel("Mapa interaktywna", icon = icon("location-dot"),
                       sidebarPanel(helpText(tags$h2("O projekcie"),
                                             HTML("<p>Korzystamy ze zbioru danych
                                         <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>
@@ -184,13 +184,16 @@ ui <- fluidPage(
                                         GitHub</a>.
                                         <br> Wybraliśmy różne atrybuty i pokazaliśmy różne zależności na wykresach i mapach,
                                         zarówno statycznych, jak i interaktywnych.</p>")
-                      ))
-             ),
-             
-             tabPanel("Mapa interaktywna", icon = icon("location-dot"),
+                      ),
                       tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
+                      ),
                       mainPanel(leafletOutput("interactive_map", height='80vh'))
              ),
+             
+             # tabPanel("Mapa interaktywna", icon = icon("location-dot"),
+             # tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
+             # mainPanel(leafletOutput("interactive_map", height='80vh'))
+             # ),
              
              tabPanel("Porównanie", icon = icon("scale-unbalanced"),
                       sidebarPanel(
