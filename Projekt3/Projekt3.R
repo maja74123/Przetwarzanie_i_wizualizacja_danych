@@ -201,7 +201,7 @@ ui <- fluidPage(
              ),
              
              tabPanel("Wykresy pudełkowe",
-                      sidebarPanel(
+                      tabsetPanel(
                         selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
                       ),
                       mainPanel(plotlyOutput("boxplot"))
@@ -211,7 +211,7 @@ ui <- fluidPage(
                       # sidebarPanel(
                       #   selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
                       # ),
-                      mainPanel(plotOutput("heatmap"), height='80vh')
+                      mainPanel(plotOutput("heatmap"))
              ),
              
              tabPanel("Zbiór danych",
@@ -325,8 +325,8 @@ server <- function(input, output) {
              legend = list(title = list(text='Wartość mediany'),
                            bordercolor = 'grey',
                            borderwidth = 1,
-                           x = 0.85,
-                           y = 0.98),
+                           x = 0.8,
+                           y = 0.35),
              colorway = c('orchid', 'goldenrod1', 'royalblue1', 'olivedrab3'))
   })
   
