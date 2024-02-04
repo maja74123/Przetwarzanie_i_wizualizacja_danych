@@ -165,7 +165,7 @@ project_description_string <- "
 ui <- fluidPage(
   theme = shinytheme("united"),
   navbarPage("Oferty mieszkaniowe",
-             tabPanel("O projekcie",
+             tabPanel("O projekcie", icon = icon("circle-info"),
                       sidebarPanel(helpText(tags$h2("O projekcie"),
                                             HTML("<p>Korzystamy ze zbioru danych
                                         <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>
@@ -186,7 +186,7 @@ ui <- fluidPage(
                       ))    
              ),
              
-             tabPanel("Mapa interaktywna",
+             tabPanel("Mapa interaktywna", icon = icon("location-dot"),
                       tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
                       mainPanel(leafletOutput("interactive_map", height='80vh'))
              ),
@@ -200,7 +200,7 @@ ui <- fluidPage(
                       mainPanel(plotOutput("compare_plot"))
              ),
              
-             tabPanel("Wykresy pudełkowe",
+             tabPanel("Wykresy pudełkowe", icon = icon("magnifying-glass-chart"),
                       tabsetPanel(
                         selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
                       ),
@@ -214,7 +214,7 @@ ui <- fluidPage(
                       mainPanel(plotOutput("heatmap"))
              ),
              
-             tabPanel("Zbiór danych",
+             tabPanel("Zbiór danych", icon = icon("table"),
                       tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
                       mainPanel(dataTableOutput("dataset_table"))
              ),
