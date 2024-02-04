@@ -151,14 +151,19 @@ datasets_months_options <- c("Sierpień 2023", "Wrzesień 2023", "Październik 2
 
 
 project_description_string <- "
-  Ten dashboard pokazuje informacje
-  o ofertach mieszkaniowych z 15 największych
-  (pod względem liczby ludności) miast w Polsce.
-  Zbiór danych pochodzi z platformy Kaggle:
-  https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland
+<p>Korzystamy ze zbioru danych
+<a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>Apartment Prices in Poland</a>
+pochodzącego z platformy <a href='https://www.kaggle.com/'> Kaggle</a>.
+Zawiera on oferty sprzedaży mieszkań z 15 największych miast w Polsce
+(pod względem liczby ludności) oraz najważniejsze informacje na ich temat.
+<br> Ze zbioru usunęliśmy kolumny zawierające dużo braków.
+<br> Dołączyliśmy dane dotyczące populacji miast. Pochodzą one ze strony internetowej
+<a href='https://stat.gov.pl/obszary-tematyczne/ludnosc/ludnosc/powierzchnia-i-ludnosc-w-przekroju-terytorialnym-w-2023-roku,7,20.html'>
+Głównego Urzędu Statystycznego</a>.
+<br> Kod do tej aplikacji jest dostępny w repozytorium na
+<a href='https://github.com/maja74123/Przetwarzanie_i_wizualizacja_danych/tree/main/Projekt3'>GitHubie</a>.
+<br> Wybraliśmy różne atrybuty i pokazaliśmy różne zależności na wykresach i mapach, zarówno statycznych, jak i interaktywnych.</p>
 "
-
-
 
 #########################################################
 
@@ -167,50 +172,29 @@ ui <- fluidPage(
   theme = shinytheme("united"),
   navbarPage("Oferty mieszkaniowe",
              tabPanel("Mapa interaktywna", icon = icon("location-dot"),
-                      sidebarPanel(helpText(tags$h2("O projekcie"),
-                                            HTML("<p>Korzystamy ze zbioru danych
-                                        <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>Apartment Prices in Poland</a>
-                                        pochodzącego z platformy <a href='https://www.kaggle.com/'> Kaggle</a>.
-                                        Zawiera on oferty sprzedaży mieszkań z 15 największych miast w Polsce
-                                        (pod względem liczby ludności) oraz najważniejsze informacje na ich temat.
-                                        <br> Ze zbioru usunęliśmy kolumny zawierające dużo braków.
-                                        <br> Dołączyliśmy dane dotyczące populacji miast. Pochodzą one ze strony internetowej
-                                        <a href='https://stat.gov.pl/obszary-tematyczne/ludnosc/ludnosc/powierzchnia-i-ludnosc-w-przekroju-terytorialnym-w-2023-roku,7,20.html'>
-                                        Głównego Urzędu Statystycznego</a>.
-                                        <br> Kod do tej aplikacji jest dostępny w repozytorium na
-                                        <a href='https://github.com/maja74123/Przetwarzanie_i_wizualizacja_danych/tree/main/Projekt3'>GitHubie</a>.
-                                        <br> Wybraliśmy różne atrybuty i pokazaliśmy różne zależności na wykresach i mapach, zarówno statycznych, jak i interaktywnych.</p>")
-                      ),
+                      sidebarPanel(helpText(tags$h2("O projekcie"), HTML(project_description_string)),
                       tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")),
-                      ),
-                      mainPanel(leafletOutput("interactive_map", height='80vh'))
+                      width = 3),
+                      mainPanel(leafletOutput("interactive_map", height='80vh')),
              ),
-             
-             # tabPanel("Mapa interaktywna", icon = icon("location-dot"),
-             # tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options)),
-             # mainPanel(leafletOutput("interactive_map", height='80vh'))
-             # ),
              
              tabPanel("Porównanie", icon = icon("scale-unbalanced"),
                       sidebarPanel(
                         selectInput("comparison_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"),
-                        selectInput("xaxis", label = "Oś x", comparison_plot_features),
-                        selectInput("yaxis", label = "Oś y", comparison_plot_features)
+                        selectInput("xaxis", label = "Oś x", comparison_plot_features, selected = "squareMeters"),
+                        selectInput("yaxis", label = "Oś y", comparison_plot_features, selected = "price"),
+                        width = 2
                       ),
                       mainPanel(plotOutput("compare_plot", height='80vh'))
              ),
              
              tabPanel("Wykresy pudełkowe", icon = icon("magnifying-glass-chart"),
-                      tabsetPanel(
-                        selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")
-                      ),
+                      sidebarPanel(selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"), width = 2),
                       mainPanel(plotlyOutput("boxplot", height='70vh'))
              ),
              
              tabPanel("Mapa cieplna", icon = icon("table-cells"),
-                      # sidebarPanel(
-                      #   selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options)
-                      # ),
+                      sidebarPanel(selectInput("heatmap_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"), width = 2),
                       mainPanel(plotOutput("heatmap", height='80vh'))
              ),
              
@@ -331,7 +315,18 @@ server <- function(input, output) {
   })
   
   output$heatmap <- renderPlot({
-    df_for_heatmap <- df[ , !(names(df) %in% c("...1", "population", "latitude", "longitude"))]
+    df_for_heatmap <- switch(input$heatmap_dataset,
+                              "Sierpień 2023" = df_august,
+                              "Wrzesień 2023" = df_september,
+                              "Październik 2023" = df_october,
+                              "Listopad 2023" = df_november,
+                              "Grudzień 2023" = df_december,
+                              "Styczeń 2024" = df_january,
+                              "Luty 2024" = df_february
+    )
+    
+    
+    df_for_heatmap <- df_for_heatmap[ , !(names(df_for_heatmap) %in% c("...1", "population", "latitude", "longitude"))]
     
     
     # Mapa cieplna macierzy korelacji
