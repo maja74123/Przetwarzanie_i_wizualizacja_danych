@@ -146,6 +146,33 @@ comparison_plot_features <- c(
   "Populacja" = "population"
 )
 
+comparison_plot_features_inverse <- c(
+  "city" = "Miasto",
+  "type" = "Typ budynku",
+  "squareMeters" = "Powierzchnia",
+  "rooms" = "Liczba pokoi",
+  "floorCount" = "Liczba pięter",
+  "buildYear" = "Rok budowy",
+  "latitude" = "Długość geograficzna",
+  "longitude" = "Szerokość geograficzna",
+  "centreDistance" = "Odległość od centrum",
+  "poiCount" = "Liczba POI",
+  "schoolDistance" = "Odległość od szkoły",
+  "clinicDistance" = "Odległość od przychodni",
+  "postOfficeDistance" = "Odległość od poczty",
+  "kindergartenDistance" = "Odległość od przedszkola",
+  "restaurantDistance" = "Odległość od restauracji",
+  "collegeDistance" = "Odległość od uczelni",
+  "pharmacyDistance" = "Odległość od apteki",
+  "hasParkingSpace" = "Parking",
+  "hasBalcony" = "Balkon",
+  "hasElevator" = "Winda",
+  "hasSecurity" = "Ochrona",
+  "hasStorageRoom" = "Komórka lokatorska",
+  "price" = "Cena",
+  "population" = "Populacja"
+)
+
 datasets_months_options <- c("Sierpień 2023", "Wrzesień 2023", "Październik 2023",
                              "Listopad 2023", "Grudzień 2023", "Styczeń 2024", "Luty 2024")
 
@@ -254,6 +281,8 @@ server <- function(input, output) {
     
     ggplot(df, mapping = aes_string(x = input$xaxis, y = input$yaxis)) +
       geom_point(aes(color = type), size = 3, alpha = 0.7) +
+      xlab(comparison_plot_features_inverse[input$xaxis]) +
+      ylab(comparison_plot_features_inverse[input$yaxis]) +
       labs(color = 'Typ budynku') +
       theme(legend.background = element_rect(color = 'black', fill = 'grey95'))
   })
