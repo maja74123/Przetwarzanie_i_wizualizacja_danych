@@ -154,15 +154,41 @@ project_description_string <- "
 <p>Korzystamy ze zbioru danych
 <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>Apartment Prices in Poland</a>
 pochodzącego z platformy <a href='https://www.kaggle.com/'> Kaggle</a>.
-Zawiera on oferty sprzedaży mieszkań z 15 największych miast w Polsce
+Zawiera on oferty sprzedaży mieszkań od sierpnia 2023 do lutego 2024 z 15 największych miast w Polsce
 (pod względem liczby ludności) oraz najważniejsze informacje na ich temat.
 <br> Ze zbioru usunęliśmy kolumny zawierające dużo braków.
 <br> Dołączyliśmy dane dotyczące populacji miast. Pochodzą one ze strony internetowej
 <a href='https://stat.gov.pl/obszary-tematyczne/ludnosc/ludnosc/powierzchnia-i-ludnosc-w-przekroju-terytorialnym-w-2023-roku,7,20.html'>
 Głównego Urzędu Statystycznego</a>.
-<br> Kod do tej aplikacji jest dostępny w repozytorium na
+<br> Kod źródłowy do tej aplikacji jest dostępny w repozytorium na
 <a href='https://github.com/maja74123/Przetwarzanie_i_wizualizacja_danych/tree/main/Projekt3'>GitHubie</a>.
-<br> Wybraliśmy różne atrybuty i pokazaliśmy różne zależności na wykresach i mapach, zarówno statycznych, jak i interaktywnych.</p>
+<br> Wybraliśmy różne atrybuty i pokazaliśmy zależności za pomocą wykresów i map.</p>
+"
+
+map_description_string <- 
+"
+Przedstawiona obok mapa pozwala porównać oferty sprzedaży mieszkań w interesującej nas lokalizacji.
+Możemy ją przybliżać, oddalać i przesuwać, w zależności od tego, jaki obszar chcemy zobaczyć dokładniej.
+Po kliknięciu znacznika możemy przeczytać podstawowe informacje o danym mieszkaniu.
+"
+
+boxplot_description_string <- "
+Przedstawione obok interaktywne wykresy pudełkowe służą do porównania ceny za metr kwadratowy
+w różnych miastach. Dostarczają one informacji na temat mediany, rozstępu ćwiartkowego, wartości minimalnej, maksymalnej
+oraz wartości odstających.
+<br> Po najechaniu kursorem na wybrane pudełko zobaczymy informacje dotyczące ceny za m\u00B2 w danym mieście.
+"
+
+heatmap_description_string <- "
+Mapa cieplna macierzy korelacji to graficzna prezentacja stopnia zależności liniowej między zmiennymi.
+Używa się do tego współczynnika korelacji liniowej Pearsona, który przyjmuje wartości z przedziału [-1, 1].
+Im większa wartość bezwzględna współczynnika, tym silniejsza jest zależność liniowa między zmiennymi.
+Wartość zero oznacza brak zależności liniowej. Mapa cieplna macierzy korelacji pozwala na szybką i łatwą ocenę zależności między zmiennymi.
+"
+
+table_description_string <- "
+W tabeli zostały przedstawione dane, z których korzystaliśmy.
+Możemy użyć wyszukiwarki, jeśli interesuje nas np. jedno miasto albo konkretny typ budynku.
 "
 
 #########################################################
@@ -173,9 +199,22 @@ ui <- fluidPage(
   navbarPage("Oferty mieszkaniowe",
              tabPanel("Mapa interaktywna", icon = icon("location-dot"),
                       sidebarPanel(helpText(tags$h2("O projekcie"), HTML(project_description_string)),
+                                   helpText(tags$h2("Mapa interaktywna"), HTML(map_description_string)),
                       tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")),
                       width = 3),
                       mainPanel(leafletOutput("interactive_map", height='80vh')),
+             ),
+             
+             tabPanel("Wykresy pudełkowe", icon = icon("magnifying-glass-chart"),
+                      sidebarPanel(helpText(tags$h2("Wykresy pudełkowe"), HTML(boxplot_description_string)),
+                        tabsetPanel(selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                      mainPanel(plotlyOutput("boxplot", height='70vh'))
+             ),
+             
+             tabPanel("Mapa cieplna", icon = icon("table-cells"),
+                      sidebarPanel(helpText(tags$h2("Mapa cieplna macierzy korelacji"), HTML(heatmap_description_string)),
+                        tabsetPanel(selectInput("heatmap_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                      mainPanel(plotOutput("heatmap", height='80vh'))
              ),
              
              tabPanel("Porównanie", icon = icon("scale-unbalanced"),
@@ -188,18 +227,9 @@ ui <- fluidPage(
                       mainPanel(plotOutput("compare_plot", height='80vh'))
              ),
              
-             tabPanel("Wykresy pudełkowe", icon = icon("magnifying-glass-chart"),
-                      sidebarPanel(selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"), width = 2),
-                      mainPanel(plotlyOutput("boxplot", height='70vh'))
-             ),
-             
-             tabPanel("Mapa cieplna", icon = icon("table-cells"),
-                      sidebarPanel(selectInput("heatmap_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"), width = 2),
-                      mainPanel(plotOutput("heatmap", height='80vh'))
-             ),
-             
              tabPanel("Zbiór danych", icon = icon("table"),
-                      sidebarPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"), width = 2),
+                      sidebarPanel(helpText(tags$h2("Tabela"), HTML(table_description_string)),
+                        tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
                       mainPanel(dataTableOutput("dataset_table"))
              ),
   )
