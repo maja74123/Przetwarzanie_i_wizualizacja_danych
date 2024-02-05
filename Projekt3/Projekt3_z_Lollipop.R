@@ -196,6 +196,9 @@ lollipop_description_string <- "
 Wykresy te przedstawiają liczbę ofert na 1000 mieszkańców. Pokazuje to w którym mieście najłatwiej kupić mieszkanie.
 "
 
+hist_description_string <- "
+Histogramy dotyczą wybranych Points of Interest. Widać, które z nich znajdują się najbliżej mieszkań, a które najdalej.
+"
 #########################################################
 
 ui <- fluidPage(
@@ -236,6 +239,13 @@ ui <- fluidPage(
                                    tabsetPanel(selectInput("lollipop_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
                       mainPanel(plotOutput("lollipop", height='70vh'))
              ),
+             
+             tabPanel("POI", icon = icon("store"),
+                      sidebarPanel(helpText(tags$h2("Histogramy"), HTML(hist_description_string)),
+                                   tabsetPanel(selectInput("hist_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                      mainPanel(plotOutput("hist", height='70vh'))
+             ),
+             
              tabPanel("Zbiór danych", icon = icon("table"),
                       sidebarPanel(helpText(tags$h2("Tabela"), HTML(table_description_string)),
                                    tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
@@ -462,15 +472,75 @@ server <- function(input, output) {
         xlab("Liczba ofert na 1000 mieszkańców") +
         ylab("Miasto") +
         ggtitle("Liczba ofert na 1000 mieszkańców w poszczególnych miastach")
-      
+  })    
   
 
+      
+      output$hist <- renderPlot({
+        
+        df_for_hist <- switch(input$hist_dataset,
+                                  "Sierpień 2023" = df_august,
+                                  "Wrzesień 2023" = df_september,
+                                  "Październik 2023" = df_october,
+                                  "Listopad 2023" = df_november,
+                                  "Grudzień 2023" = df_december,
+                                  "Styczeń 2024" = df_january,
+                                  "Luty 2024" = df_february)
+        
+        # Histogramy pokazujące odległość od mieszkań do najbliższych POI
+        # Określenie zakresów osi x i y
+        xlim_range <- c(0, 5)
+        ylim_range <- c(0, 5500)
+        
+        # Wektor z nazwami POI
+        distance_columns <- c('schoolDistance', 'clinicDistance',
+                              'postOfficeDistance', 'kindergartenDistance',
+                              'restaurantDistance', 'collegeDistance',
+                              'pharmacyDistance')
+        
+        # Utworzenie nowej tabeli zawierającej wybrane kolumny
+        selected_distances <- df_for_hist[, distance_columns]
+        
+        # Nazwy dla histogramów
+        hist_titles <- c('Szkoła', 'Przychodnia', 'Poczta',
+                         'Przedszkole', 'Restauracja',
+                         'Uniwersytet', 'Apteka')
+        
+        # Tworzenie wielu histogramów na jednym wykresie
+        par(mfrow = c(3, 3), mar = c(5, 4, 2, 0), oma = c(0, 0, 4, 0))
+        
+        # Tworzenie histogramów
+        for (i in 1:length(distance_columns)) {
+          hist_result <- hist(selected_distances[[i]], 
+                              main = paste(hist_titles[i]),
+                              xlab = paste('km'),  
+                              ylab = 'Liczba mieszkań',
+                              col = 'lightblue',
+                              xlim = xlim_range,
+                              ylim = ylim_range)
+          
+          # Dodanie wartości z osi y nad słupkami
+          text(hist_result$mids,
+               hist_result$counts,
+               labels = hist_result$counts,
+               pos = 3,
+               col = '#0000CD',
+               cex = 0.8)
+        }
+        
+        # Tytuł główny
+        mtext('Odległość od mieszkań do najbliższych POI (Points Of Interest)',
+              outer = TRUE, line = 1.2, cex = 1.8)
+        
+        
+      
+      
+      
+      
 
   })
 }
 
-
- 
 
 
 
