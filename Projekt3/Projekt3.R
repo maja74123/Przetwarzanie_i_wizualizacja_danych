@@ -253,7 +253,9 @@ server <- function(input, output) {
                  "Luty 2024" = df_february)
     
     ggplot(df, mapping = aes_string(x = input$xaxis, y = input$yaxis)) +
-      geom_point(size = 3)
+      geom_point(aes(color = type), size = 3, alpha = 0.7) +
+      labs(color = 'Typ budynku') +
+      theme(legend.background = element_rect(color = 'black', fill = 'grey95'))
   })
   
   output$interactive_map <- renderLeaflet({
