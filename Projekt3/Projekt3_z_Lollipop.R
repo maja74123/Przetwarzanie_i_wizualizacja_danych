@@ -518,25 +518,14 @@ server <- function(input, output) {
                               col = 'lightblue',
                               xlim = xlim_range,
                               ylim = ylim_range)
-          
-          # Dodanie wartości z osi y nad słupkami
-          text(hist_result$mids,
-               hist_result$counts,
-               labels = hist_result$counts,
-               pos = 3,
-               col = '#0000CD',
-               cex = 0.8)
+        
         }
         
         # Tytuł główny
         mtext('Odległość od mieszkań do najbliższych POI (Points Of Interest)',
               outer = TRUE, line = 1.2, cex = 1.8)
         
-        
-      
-      
-      
-      
+  
 
   })
 }
