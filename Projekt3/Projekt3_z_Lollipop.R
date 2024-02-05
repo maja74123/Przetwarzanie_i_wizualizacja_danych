@@ -458,8 +458,8 @@ server <- function(input, output) {
         ggplot(aes(x = offers_per_1000_people, y = city)) +
         geom_segment(aes(x = 0, xend = offers_per_1000_people,
                          y = city, yend = city),
-                     color = "#A2B5CD", linewidth = 1.5) +
-        geom_point(size = 4, color = "#69b3a2") +
+                     color = "#A2CD5A", linewidth = 1.5) +
+        geom_point(size = 4, color = "#6E8B3D") +
         xlim(0, floor(max(df_offers_per_1000_people$offers_per_1000_people)) + 1) +
         geom_text(aes(x = offers_per_1000_people, y = city, label = offers_per_1000_people),
                   hjust = -0.4, vjust = 0.3) + # vjust - odległość wartości od lolipa (góra/dół)
