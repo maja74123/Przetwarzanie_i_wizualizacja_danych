@@ -196,10 +196,9 @@ Po kliknięciu znacznika możemy przeczytać podstawowe informacje o danym miesz
 
 boxplot_description_string <-
 "
-Przedstawione obok interaktywne wykresy pudełkowe służą do porównania ceny za metr kwadratowy
+Przedstawione obok interaktywne wykresy pudełkowe służą do porównania ceny za m\u00B2
 w różnych miastach. Dostarczają one informacji na temat mediany, rozstępu ćwiartkowego, wartości minimalnej, maksymalnej
-oraz wartości odstających.
-<br> Po najechaniu kursorem na wybrane pudełko zobaczymy informacje dotyczące ceny za m\u00B2 w danym mieście.
+oraz obserwacji odstających. Możemy odczytać te wartości po najechaniu kursorem na wybrane pudełko.
 "
 
 heatmap_description_string <-
