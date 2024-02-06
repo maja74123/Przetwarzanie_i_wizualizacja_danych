@@ -1,21 +1,20 @@
 library(shiny)
-library(shinythemes)
-library(DT)
-library(data.table)
-library(ggplot2)
-library(plotly)
-library(leaflet)
+library(shinythemes) # motywy
+library(DT) # tabela
+library(data.table) # tabela
+library(ggplot2) # wykresy statyczne
+library(plotly) # wykresy interaktywne
+library(leaflet) # mapa interaktywna
 library(tidyr)
 library(dplyr)
-library(readr)
-library(reshape2)
+library(readr) # wczytywanie zbioru danych
+library(reshape2) # przygotowanie danych do mapy cieplnej
 
 
 amenities_columns <- c('hasElevator', 'hasParkingSpace', 'hasBalcony',
                        'hasSecurity', 'hasStorageRoom')
 amenities_names <- c('winda', 'parking', 'balkon',
                      'ochrona', 'komórka lokatorska')
-
 
 prepare_amenities_strings <- function(amenities_names, boolean_selector) {
   amenities_strings <- c()
@@ -29,7 +28,6 @@ prepare_amenities_strings <- function(amenities_names, boolean_selector) {
   }
   return(amenities_strings)
 }
-
 
 # Przygotowanie zbioru danych do projektu 3
 prepare_dataset_for_project3 <- function(filename, columns_to_remove=c('floor', 'ownership', 'buildingMaterial', 'condition')) {
@@ -55,7 +53,6 @@ df_november <- prepare_dataset_for_project3('apartments_pl_2023_11_with_populati
 df_december <- prepare_dataset_for_project3('apartments_pl_2023_12_with_population.csv')
 df_january <- prepare_dataset_for_project3('apartments_pl_2024_01_with_population.csv')
 df_february <- prepare_dataset_for_project3('apartments_pl_2024_02_with_population.csv')
-df <- df_august
 
 # Przygotowanie różnokolorowych znaczników (do mapy leaflet)
 # sposób został zaczerpnięty z:
@@ -80,7 +77,6 @@ icons_colors <- iconList('apartamentowiec' = makeIcon('icons/marker_icon_red.png
 html_legend <- '<img src="https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_red.png">apartamentowiec<br/>
 <img src="https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_orange.png">blok mieszkalny<br/>
 <img src="https://raw.githubusercontent.com/maja74123/Przetwarzanie_i_wizualizacja_danych/main/Projekt2/icons/marker_icon_blue.png">kamienica'
-
 
 prepare_median_ranges_for_boxplots <- function(df) {
   # Przygotowanie danych do wykresów dotyczących ceny za metr kwadratowy
@@ -112,12 +108,6 @@ prepare_median_ranges_for_boxplots <- function(df) {
   
   return(df_for_boxplots)
 }
-
-df_august_for_boxplots <- prepare_median_ranges_for_boxplots(df_august)
-
-
-
-### ui ###
 
 comparison_plot_features <- c(
   "Miasto" = "city",
@@ -180,8 +170,8 @@ datasets_cities_options <-  c("Wszystkie", "Białystok", "Bydgoszcz", "Częstoch
                               "Gdynia", "Katowice", "Kraków", "Lublin", "Łódź", "Poznań",
                               "Radom", "Rzeszów", "Szczecin", "Warszawa", "Wrocław")
 
-
-project_description_string <- "
+project_description_string <-
+"
 <p>Korzystamy ze zbioru danych
 <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>Apartment Prices in Poland</a>
 pochodzącego z platformy <a href='https://www.kaggle.com/'> Kaggle</a>.
@@ -191,7 +181,7 @@ Zawiera on oferty sprzedaży mieszkań od sierpnia 2023 do lutego 2024 z 15 najw
 <br> Dołączyliśmy dane dotyczące populacji miast. Pochodzą one ze strony internetowej
 <a href='https://stat.gov.pl/obszary-tematyczne/ludnosc/ludnosc/powierzchnia-i-ludnosc-w-przekroju-terytorialnym-w-2023-roku,7,20.html'>
 Głównego Urzędu Statystycznego</a>.
-<br> Kod źródłowy do tej aplikacji jest dostępny w repozytorium na
+<br> Kod źródłowy do tej aplikacji jest dostępny w repozytorium <br> na
 <a href='https://github.com/maja74123/Przetwarzanie_i_wizualizacja_danych/tree/main/Projekt3'>GitHubie</a>.
 <br> Wybraliśmy różne atrybuty i pokazaliśmy zależności za pomocą wykresów i map.</p>
 "
@@ -203,26 +193,51 @@ Możemy ją przybliżać, oddalać i przesuwać, w zależności od tego, jaki ob
 Po kliknięciu znacznika możemy przeczytać podstawowe informacje o danym mieszkaniu.
 "
 
-boxplot_description_string <- "
+boxplot_description_string <-
+"
 Przedstawione obok interaktywne wykresy pudełkowe służą do porównania ceny za metr kwadratowy
 w różnych miastach. Dostarczają one informacji na temat mediany, rozstępu ćwiartkowego, wartości minimalnej, maksymalnej
 oraz wartości odstających.
 <br> Po najechaniu kursorem na wybrane pudełko zobaczymy informacje dotyczące ceny za m\u00B2 w danym mieście.
 "
 
-heatmap_description_string <- "
+heatmap_description_string <-
+"
 Mapa cieplna macierzy korelacji to graficzna prezentacja stopnia zależności liniowej między zmiennymi.
 Używa się do tego współczynnika korelacji liniowej Pearsona, który przyjmuje wartości z przedziału [-1, 1].
 Im większa wartość bezwzględna współczynnika, tym silniejsza jest zależność liniowa między zmiennymi.
 Wartość zero oznacza brak zależności liniowej. Mapa cieplna macierzy korelacji pozwala na szybką i łatwą ocenę zależności między zmiennymi.
 "
 
-table_description_string <- "
+comparison_description_string <-
+"
+Na przedstawionych obok wykresach punktowych możemy sami zadecydować,
+która cecha znajdzie się na wybranej osi.
+Pozwala to porównać między sobą różne atrybuty ze zbioru danych.
+Możemy również wybrać miasto, które nas interesuje.
+"
+
+lollipop_description_string <-
+"
+Wykresy te przedstawiają liczbę ofert na 1000 mieszkańców danego miasta.
+Pokazuje to, w którym mieście najłatwiej kupić mieszkanie.
+"
+
+hist_description_string <-
+"
+Histogramy dotyczą wybranych Points of Interest (POI).
+Można zobaczyć, które z nich znajdują się najbliżej mieszkań, a które najdalej.
+"
+
+table_description_string <-
+"
 W tabeli zostały przedstawione dane, z których korzystaliśmy.
-Możemy użyć wyszukiwarki, jeśli interesuje nas np. jedno miasto albo konkretny typ budynku.
+Możemy użyć wyszukiwarki, jeśli interesuje nas na przykład jedno miasto albo konkretny typ budynku.
 "
 
 #########################################################
+
+### ui ###
 
 ui <- fluidPage(
   tags$head(tags$style("* {font-family: 'Arial'}")),
@@ -232,29 +247,29 @@ ui <- fluidPage(
                       sidebarPanel(helpText(tags$h2("O projekcie"), HTML(project_description_string)),
                                    helpText(tags$h2("Mapa interaktywna"), HTML(map_description_string)),
                       tabsetPanel(
-                        selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")),
+                        selectInput("leaflet_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")),
                         sliderInput("rangeMap", "Wybierz zakres cen [tys. zł]:", min = 151, max = 2500, value = c(151, 2500)),
                         width = 3
                       ),
                       mainPanel(leafletOutput("interactive_map", height='80vh')),
              ),
              
-             tabPanel("Wykresy pudełkowe", icon = icon("magnifying-glass-chart"),
+             tabPanel("Cena za m\u00B2", icon = icon("magnifying-glass-chart"),
                       sidebarPanel(helpText(tags$h2("Wykresy pudełkowe"), HTML(boxplot_description_string)),
-                        tabsetPanel(selectInput("boxplot_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                        tabsetPanel(selectInput("boxplot_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
                       mainPanel(plotlyOutput("boxplot", height='70vh'))
              ),
              
              tabPanel("Mapa cieplna", icon = icon("table-cells"),
                       sidebarPanel(helpText(tags$h2("Mapa cieplna macierzy korelacji"), HTML(heatmap_description_string)),
-                        tabsetPanel(selectInput("heatmap_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                        tabsetPanel(selectInput("heatmap_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
                       mainPanel(plotOutput("heatmap", height='80vh'))
              ),
              
              tabPanel("Porównanie", icon = icon("scale-unbalanced"),
-                      sidebarPanel(
-                        selectInput("comparison_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"),
-                        selectInput("comparison_dataset_city", label = "Wybierz miasto", datasets_cities_options, selected = "Wszystkie"),
+                      sidebarPanel(helpText(tags$h2("Wykresy punktowe"), HTML(comparison_description_string)),
+                        selectInput("comparison_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023"),
+                        selectInput("comparison_dataset_city", label = "Wybierz miasto:", datasets_cities_options, selected = "Wszystkie"),
                         selectInput("xaxis", label = "Oś x", comparison_plot_features, selected = "squareMeters"),
                         selectInput("yaxis", label = "Oś y", comparison_plot_features, selected = "price"),
                         width = 2
@@ -262,14 +277,25 @@ ui <- fluidPage(
                       mainPanel(plotOutput("compare_plot", height='80vh'))
              ),
              
+             tabPanel("Liczba ofert", icon = icon("users"),
+                      sidebarPanel(helpText(tags$h2("Wykresy lizakowe"), HTML(lollipop_description_string)),
+                                   tabsetPanel(selectInput("lollipop_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                      mainPanel(plotOutput("lollipop", height='70vh'))
+             ),
+             
+             tabPanel("POI", icon = icon("store"),
+                      sidebarPanel(helpText(tags$h2("Histogramy"), HTML(hist_description_string)),
+                                   tabsetPanel(selectInput("hist_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                      mainPanel(plotOutput("hist", height='70vh'))
+             ),
+             
              tabPanel("Zbiór danych", icon = icon("table"),
                       sidebarPanel(helpText(tags$h2("Tabela"), HTML(table_description_string)),
                         tabsetPanel(
-                          selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")),
+                          selectInput("table_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")),
                           sliderInput("rangeTable", "Wybierz zakres cen [tys. zł]:", min = 151, max = 2500, value = c(151, 2500)),
                           width = 2
                         ),
-                      
                       mainPanel(dataTableOutput("dataset_table"))
              ),
   )
@@ -280,29 +306,6 @@ ui <- fluidPage(
 ### server ###
 
 server <- function(input, output) {
-  
-  output$compare_plot <- renderPlot({
-    
-    df <- switch(input$comparison_dataset,
-                 "Sierpień 2023" = df_august,
-                 "Wrzesień 2023" = df_september,
-                 "Październik 2023" = df_october,
-                 "Listopad 2023" = df_november,
-                 "Grudzień 2023" = df_december,
-                 "Styczeń 2024" = df_january,
-                 "Luty 2024" = df_february)
-    
-    if(input$comparison_dataset_city != "Wszystkie") {
-      df <- df[df$city == input$comparison_dataset_city, ]
-    }
-    
-    ggplot(df, mapping = aes_string(x = input$xaxis, y = input$yaxis)) +
-      geom_point(aes(color = type), size = 3, alpha = 0.7) +
-      xlab(comparison_plot_features_inverse[input$xaxis]) +
-      ylab(comparison_plot_features_inverse[input$yaxis]) +
-      labs(color = 'Typ budynku') +
-      theme(legend.background = element_rect(color = 'black', fill = 'grey95'))
-  })
   
   output$interactive_map <- renderLeaflet({
     df <- switch(input$leaflet_dataset,
@@ -336,42 +339,16 @@ server <- function(input, output) {
       addControl(html = html_legend, position = 'bottomright')
   })
   
-  output$dataset_table <- DT::renderDataTable({
-    df <- switch(input$table_dataset,
-                 "Sierpień 2023" = df_august,
-                 "Wrzesień 2023" = df_september,
-                 "Październik 2023" = df_october,
-                 "Listopad 2023" = df_november,
-                 "Grudzień 2023" = df_december,
-                 "Styczeń 2024" = df_january,
-                 "Luty 2024" = df_february)
-    
-    df_for_table <- df[ , !(names(df) %in% c("...1", "id", "schoolDistance", "clinicDistance","postOfficeDistance",
-                                             "kindergartenDistance", "restaurantDistance", "pharmacyDistance", "hasParkingSpace",
-                                             "hasBalcony", "hasElevator", "hasSecurity", "hasStorageRoom"))]
-    
-    df_for_table$latitude <- round(df_for_table$latitude, 2)
-    df_for_table$longitude <- round(df_for_table$longitude, 2)
-    
-    df_for_table <- df_for_table[df_for_table$price>=input$rangeTable[1]*1000 & df_for_table$price<=input$rangeTable[2]*1000, ]
-    
-    datatable(df_for_table, colnames = c("Miasto", "Typ budynku", "Powierzchnia [m\u00B2]", "Liczba pokoi", "Liczba pięter", "Rok budowy",
-                                         "Szerokość geograficzna", "Długość gegraficzna", "Odległość od centrum [km]", "Liczba POI",
-                                         "Odległość od uczelni [km]", "Cena [zł]", "Populacja", "Udogodnienia"))
-  })
-  
-  
-  
   output$boxplot <- renderPlotly({
     
     df_for_boxplots <- switch(input$boxplot_dataset,
-                 "Sierpień 2023" = prepare_median_ranges_for_boxplots(df_august),
-                 "Wrzesień 2023" = prepare_median_ranges_for_boxplots(df_september),
-                 "Październik 2023" = prepare_median_ranges_for_boxplots(df_october),
-                 "Listopad 2023" = prepare_median_ranges_for_boxplots(df_november),
-                 "Grudzień 2023" = prepare_median_ranges_for_boxplots(df_december),
-                 "Styczeń 2024" = prepare_median_ranges_for_boxplots(df_january),
-                 "Luty 2024" = prepare_median_ranges_for_boxplots(df_february)
+                              "Sierpień 2023" = prepare_median_ranges_for_boxplots(df_august),
+                              "Wrzesień 2023" = prepare_median_ranges_for_boxplots(df_september),
+                              "Październik 2023" = prepare_median_ranges_for_boxplots(df_october),
+                              "Listopad 2023" = prepare_median_ranges_for_boxplots(df_november),
+                              "Grudzień 2023" = prepare_median_ranges_for_boxplots(df_december),
+                              "Styczeń 2024" = prepare_median_ranges_for_boxplots(df_january),
+                              "Luty 2024" = prepare_median_ranges_for_boxplots(df_february)
     )
     
     # Interaktywne wykresy pudełkowe pokazujące cenę za metr kwadratowy z podziałem na miasta
@@ -397,18 +374,16 @@ server <- function(input, output) {
   
   output$heatmap <- renderPlot({
     df_for_heatmap <- switch(input$heatmap_dataset,
-                              "Sierpień 2023" = df_august,
-                              "Wrzesień 2023" = df_september,
-                              "Październik 2023" = df_october,
-                              "Listopad 2023" = df_november,
-                              "Grudzień 2023" = df_december,
-                              "Styczeń 2024" = df_january,
-                              "Luty 2024" = df_february
+                             "Sierpień 2023" = df_august,
+                             "Wrzesień 2023" = df_september,
+                             "Październik 2023" = df_october,
+                             "Listopad 2023" = df_november,
+                             "Grudzień 2023" = df_december,
+                             "Styczeń 2024" = df_january,
+                             "Luty 2024" = df_february
     )
     
-    
     df_for_heatmap <- df_for_heatmap[ , !(names(df_for_heatmap) %in% c("...1", "population", "latitude", "longitude"))]
-    
     
     # Mapa cieplna macierzy korelacji
     correlation_matrix <- cor(df_for_heatmap[sapply(df_for_heatmap, is.numeric)])
@@ -422,13 +397,13 @@ server <- function(input, output) {
                       'Odległość od poczty', 'Odległość od przedszkola',
                       'Odległość od restauracji', 'Odległość od uczelni',
                       'Odległość od apteki', 'Cena')
-
+    
     row.names(correlation_matrix_half) <- Polish_names
     colnames(correlation_matrix_half) <- Polish_names
-
+    
     correlation_matrix_half <- correlation_matrix_half[, colnames(correlation_matrix_half) != 'Rok budowy']
     correlation_matrix_half <- correlation_matrix_half[row.names(correlation_matrix_half) != 'Rok budowy', ]
-
+    
     df_for_heatmap <- melt(correlation_matrix_half, na.rm = TRUE)
     rounded_values <- round(df_for_heatmap$value, 2)
     
@@ -437,7 +412,6 @@ server <- function(input, output) {
       scale_fill_gradient2(low = 'blue', high = 'red', mid = 'white',
                            midpoint = 0, limit = c(-1,1), space = 'Lab',
                            name = 'Współczynnik korelacji Pearsona') +
-      labs(title = 'Mapa cieplna macierzy korelacji') +
       geom_text(aes(label = rounded_values), color = 'black', size = 5) +
       theme_minimal() +
       theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1),
@@ -451,8 +425,145 @@ server <- function(input, output) {
                                    title.position = 'top', title.hjust = 0.5)) +
       coord_fixed()
   })
-
-}
+  
+  output$compare_plot <- renderPlot({
+    
+    df <- switch(input$comparison_dataset,
+                 "Sierpień 2023" = df_august,
+                 "Wrzesień 2023" = df_september,
+                 "Październik 2023" = df_october,
+                 "Listopad 2023" = df_november,
+                 "Grudzień 2023" = df_december,
+                 "Styczeń 2024" = df_january,
+                 "Luty 2024" = df_february)
+    
+    if(input$comparison_dataset_city != "Wszystkie") {
+      df <- df[df$city == input$comparison_dataset_city, ]
+    }
+    
+    ggplot(df, mapping = aes_string(x = input$xaxis, y = input$yaxis)) +
+      geom_point(aes(color = type), size = 3, alpha = 0.7) +
+      xlab(comparison_plot_features_inverse[input$xaxis]) +
+      ylab(comparison_plot_features_inverse[input$yaxis]) +
+      labs(color = 'Typ budynku') +
+      theme(legend.background = element_rect(color = 'black', fill = 'grey95'))
+  })
+  
+  output$lollipop <- renderPlot({
+    
+    df_for_lollipop <- switch(input$lollipop_dataset,
+                              "Sierpień 2023" = df_august,
+                              "Wrzesień 2023" = df_september,
+                              "Październik 2023" = df_october,
+                              "Listopad 2023" = df_november,
+                              "Grudzień 2023" = df_december,
+                              "Styczeń 2024" = df_january,
+                              "Luty 2024" = df_february)
+    
+    # Wyznaczanie liczby ofert przypadającej na tysiąc mieszkańców
+    df_offers_per_1000_people <- df_for_lollipop %>%
+      select(city, id, population) %>% 
+      group_by(city) %>%
+      summarise(total_offers = length(id), total_population = first(population)) %>%
+      mutate(offers_per_1000_people = round((1000 * total_offers / total_population), 2))
+    
+    # Wykres typu Lollipop
+    df_offers_per_1000_people %>%
+      arrange(offers_per_1000_people) %>%
+      mutate(city = factor(city, city)) %>%
+      ggplot(aes(x = offers_per_1000_people, y = city)) +
+      geom_segment(aes(x = 0, xend = offers_per_1000_people,
+                       y = city, yend = city),
+                   color = "#A2CD5A", linewidth = 1.5) +
+      geom_point(size = 4, color = "#6E8B3D") +
+      xlim(0, floor(max(df_offers_per_1000_people$offers_per_1000_people)) + 1) +
+      geom_text(aes(x = offers_per_1000_people, y = city, label = offers_per_1000_people),
+                hjust = -0.4, vjust = 0.3) + # vjust - odległość wartości od lolipa (góra/dół)
+      theme_minimal() +
+      theme(
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        plot.title.position = "plot",
+        plot.title = element_text(hjust = 0.6)) +
+      xlab("Liczba ofert na 1000 mieszkańców") +
+      ylab("Miasto") +
+      ggtitle("Liczba ofert na 1000 mieszkańców w poszczególnych miastach")
+  })
+  
+  output$hist <- renderPlot({
+    
+    df_for_hist <- switch(input$hist_dataset,
+                          "Sierpień 2023" = df_august,
+                          "Wrzesień 2023" = df_september,
+                          "Październik 2023" = df_october,
+                          "Listopad 2023" = df_november,
+                          "Grudzień 2023" = df_december,
+                          "Styczeń 2024" = df_january,
+                          "Luty 2024" = df_february)
+    
+    # Histogramy pokazujące odległość od mieszkań do najbliższych POI
+    # Określenie zakresów osi x i y
+    xlim_range <- c(0, 5)
+    ylim_range <- c(0, 5500)
+    
+    # Wektor z nazwami POI
+    distance_columns <- c('schoolDistance', 'clinicDistance',
+                          'postOfficeDistance', 'kindergartenDistance',
+                          'restaurantDistance', 'collegeDistance',
+                          'pharmacyDistance')
+    
+    # Utworzenie nowej tabeli zawierającej wybrane kolumny
+    selected_distances <- df_for_hist[, distance_columns]
+    
+    # Nazwy dla histogramów
+    hist_titles <- c('Szkoła', 'Przychodnia', 'Poczta',
+                     'Przedszkole', 'Restauracja',
+                     'Uniwersytet', 'Apteka')
+    
+    # Tworzenie wielu histogramów na jednym wykresie
+    par(mfrow = c(3, 3), mar = c(5, 4, 2, 0), oma = c(0, 0, 4, 0))
+    
+    # Tworzenie histogramów
+    for (i in 1:length(distance_columns)) {
+      hist_result <- hist(selected_distances[[i]], 
+                          main = paste(hist_titles[i]),
+                          xlab = paste('km'),  
+                          ylab = 'Liczba mieszkań',
+                          col = 'lightblue',
+                          xlim = xlim_range,
+                          ylim = ylim_range)
+    }
+    
+    # Tytuł główny
+    mtext('Odległość od mieszkań do najbliższych POI (Points Of Interest)',
+          outer = TRUE, line = 1.2, cex = 1.8)
+  })
+  
+  output$dataset_table <- DT::renderDataTable({
+    df <- switch(input$table_dataset,
+                 "Sierpień 2023" = df_august,
+                 "Wrzesień 2023" = df_september,
+                 "Październik 2023" = df_october,
+                 "Listopad 2023" = df_november,
+                 "Grudzień 2023" = df_december,
+                 "Styczeń 2024" = df_january,
+                 "Luty 2024" = df_february)
+    
+    df_for_table <- df[ , !(names(df) %in% c("...1", "id", "schoolDistance", "clinicDistance","postOfficeDistance",
+                                             "kindergartenDistance", "restaurantDistance", "pharmacyDistance", "hasParkingSpace",
+                                             "hasBalcony", "hasElevator", "hasSecurity", "hasStorageRoom"))]
+    
+    df_for_table$latitude <- round(df_for_table$latitude, 2)
+    df_for_table$longitude <- round(df_for_table$longitude, 2)
+    
+    df_for_table <- df_for_table[df_for_table$price>=input$rangeTable[1]*1000 & df_for_table$price<=input$rangeTable[2]*1000, ]
+    
+    datatable(df_for_table, colnames = c("Miasto", "Typ budynku", "Powierzchnia [m\u00B2]", "Liczba pokoi", "Liczba pięter", "Rok budowy",
+                                         "Szerokość geograficzna", "Długość gegraficzna", "Odległość od centrum [km]", "Liczba POI",
+                                         "Odległość od uczelni [km]", "Cena [zł]", "Populacja", "Udogodnienia"))
+  })
+  
+  }
 
 #########################################################
 
