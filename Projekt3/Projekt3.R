@@ -172,7 +172,7 @@ datasets_cities_options <-  c("Wszystkie", "Białystok", "Bydgoszcz", "Częstoch
                               "Radom", "Rzeszów", "Szczecin", "Warszawa", "Wrocław")
 
 project_description_string <-
-"
+  "
 <p>Korzystamy ze zbioru danych
 <a href='https://www.kaggle.com/datasets/krzysztofjamroz/apartment-prices-in-poland'>Apartment Prices in Poland</a>
 pochodzącego z platformy <a href='https://www.kaggle.com/'> Kaggle</a>.
@@ -188,21 +188,21 @@ Głównego Urzędu Statystycznego</a>.
 "
 
 map_description_string <- 
-"
+  "
 Przedstawiona obok mapa pozwala porównać oferty sprzedaży mieszkań w interesującej nas lokalizacji.
 Możemy ją przybliżać, oddalać i przesuwać, w zależności od tego, jaki obszar chcemy zobaczyć dokładniej.
 Po kliknięciu znacznika możemy przeczytać podstawowe informacje o danym mieszkaniu.
 "
 
 boxplot_description_string <-
-"
+  "
 Przedstawione obok interaktywne wykresy pudełkowe służą do porównania ceny za m\u00B2
 w różnych miastach. Dostarczają one informacji na temat mediany, rozstępu ćwiartkowego, wartości minimalnej, maksymalnej
 oraz obserwacji odstających. Możemy odczytać te wartości po najechaniu kursorem na wybrane pudełko.
 "
 
 heatmap_description_string <-
-"
+  "
 Mapa cieplna macierzy korelacji to graficzna prezentacja stopnia zależności liniowej między zmiennymi.
 Używa się do tego współczynnika korelacji liniowej Pearsona, który przyjmuje wartości z przedziału [-1, 1].
 Im większa wartość bezwzględna współczynnika, tym silniejsza jest zależność liniowa między zmiennymi.
@@ -210,34 +210,39 @@ Wartość zero oznacza brak zależności liniowej. Mapa cieplna macierzy korelac
 "
 
 comparison_description_string <-
-"
-Na przedstawionych obok wykresach punktowych możemy sami zadecydować,
+  "
+Na przedstawionym obok wykresie punktowym możemy sami zadecydować,
 która cecha znajdzie się na wybranej osi.
 Pozwala to porównać między sobą różne atrybuty ze zbioru danych.
 Możemy również wybrać miasto, które nas interesuje.
 "
 
 lollipop_description_string <-
-"
+  "
 Wykresy te przedstawiają liczbę ofert na 1000 mieszkańców danego miasta.
 Pokazuje to, w którym mieście najłatwiej kupić mieszkanie.
 "
 
 hist_description_string <-
-"
+  "
 Histogramy dotyczą wybranych Points of Interest (POI).
 Można zobaczyć, które z nich znajdują się najbliżej mieszkań, a które najdalej.
 "
 
 elevator_description_string <-
-"
+  "
 Dzięki tym wykresom możemy zauważyć, że winda najrzadziej występuje w kamienicach
 (budynki <br> o mniejszej liczbie pięter, budowane dawniej), natomiast najczęściej <br>w nowoczesnych apartamentowcach.
 <br>Zgodnie z przepisami budynki posiadające 5 lub więcej kondygnacji powinny posiadać windę.
 "
 
-table_description_string <-
+scatterplot_description_string <-
+  "
+Wykres dotyczy zależności ceny mieszkania od powierzchni <br>z podziałem na rodzaj budynku.
 "
+
+table_description_string <-
+  "
 W tabeli zostały przedstawione dane, z których korzystaliśmy.
 Możemy użyć wyszukiwarki, jeśli interesuje nas na przykład jedno miasto albo konkretny typ budynku.
 "
@@ -300,6 +305,14 @@ ui <- fluidPage(
                       sidebarPanel(helpText(tags$h2("Wykresy kolumnowe"), HTML(elevator_description_string)),
                                    tabsetPanel(selectInput("elevator_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
                       mainPanel(plotOutput("elevator_plots", height='80vh'))
+             ),
+             
+             tabPanel("Powierzchnia a cena", icon = icon("magnifying-glass-dollar"),
+                      sidebarPanel(helpText(tags$h2("Wykres rozrzutu"), HTML(scatterplot_description_string)),
+                                   tabsetPanel(selectInput("scatterplot_dataset", label = "Wybierz miesiąc", datasets_months_options, selected = "Grudzień 2023")),
+                                   selectInput("scatterplot_dataset_city", label = "Wybierz miasto:", datasets_cities_options, selected = "Wszystkie"),
+                                   width = 2),
+                      mainPanel(plotlyOutput("scatterplot", height='70vh'))
              ),
              
              tabPanel("Zbiór danych", icon = icon("table"),
@@ -627,6 +640,41 @@ server <- function(input, output) {
                                                        fill = 'grey95'),
                       legend.position = c(0.9, 0.8)),
               ncol = 1)
+  })
+  
+  output$scatterplot <- renderPlotly({
+    
+    df <- switch(input$scatterplot_dataset,
+                 "Sierpień 2023" = df_august,
+                 "Wrzesień 2023" = df_september,
+                 "Październik 2023" = df_october,
+                 "Listopad 2023" = df_november,
+                 "Grudzień 2023" = df_december,
+                 "Styczeń 2024" = df_january,
+                 "Luty 2024" = df_february)
+    
+    if(input$scatterplot_dataset_city != "Wszystkie") {
+      df <- df[df$city == input$scatterplot_dataset_city, ]
+    }
+    
+    plot_ly(data = df ,x = ~squareMeters,y = ~price, color = ~type,
+            type = 'scatter', mode = 'markers', text = ~paste('<br>Powierzchnia:', squareMeters, 'm\u00B2',
+                                                        '<br>Cena:', ifelse(price < 10^6, price / 1000, price / (10^6)),
+                                                        ifelse(price < 10^6, 'tys. zł', 'mln zł'),
+                                                        '<br>Cena za m\u00B2:', round((price / squareMeters), 2), 'zł',
+                                                        '<br>Rok budowy:', buildYear,
+                                                        '<br>Piętro:', floorCount,
+                                                        '<br>Liczba pokoi:', rooms,
+                                                        '<br>Odległość od centrum:', centreDistance, 'km'),
+            hoverinfo = 'text',marker = list(size = 10) )%>%
+      
+      layout(title = list(text = 'Zależność ceny od powierzchni', y = 0.99),
+             xaxis = list(title = 'Powierzchnia [m\u00B2]'),
+             yaxis = list(title = 'Cena [zł]'),
+             legend = list(title = list(text='Typ budynku'),
+                           bordercolor = 'grey',
+                           borderwidth = 1
+             ))
   })
   
   output$dataset_table <- DT::renderDataTable({
