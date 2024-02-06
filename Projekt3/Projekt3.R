@@ -9,6 +9,7 @@ library(tidyr)
 library(dplyr)
 library(readr) # wczytywanie zbioru danych
 library(reshape2) # przygotowanie danych do mapy cieplnej
+library(cowplot) # ułożenie wykresów w siatkę
 
 
 amenities_columns <- c('hasElevator', 'hasParkingSpace', 'hasBalcony',
@@ -229,6 +230,13 @@ Histogramy dotyczą wybranych Points of Interest (POI).
 Można zobaczyć, które z nich znajdują się najbliżej mieszkań, a które najdalej.
 "
 
+elevator_description_string <-
+"
+Dzięki tym wykresom możemy zauważyć, że winda najrzadziej występuje w kamienicach
+(budynki <br> o mniejszej liczbie pięter, budowane dawniej), natomiast najczęściej <br>w nowoczesnych apartamentowcach.
+<br>Zgodnie z przepisami budynki posiadające 5 lub więcej kondygnacji powinny posiadać windę.
+"
+
 table_description_string <-
 "
 W tabeli zostały przedstawione dane, z których korzystaliśmy.
@@ -246,33 +254,33 @@ ui <- fluidPage(
              tabPanel("Mapa interaktywna", icon = icon("location-dot"),
                       sidebarPanel(helpText(tags$h2("O projekcie"), HTML(project_description_string)),
                                    helpText(tags$h2("Mapa interaktywna"), HTML(map_description_string)),
-                      tabsetPanel(
-                        selectInput("leaflet_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")),
-                        sliderInput("rangeMap", "Wybierz zakres cen [tys. zł]:", min = 151, max = 2500, value = c(151, 2500)),
-                        width = 3
+                                   tabsetPanel(
+                                     selectInput("leaflet_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")),
+                                   sliderInput("rangeMap", "Wybierz zakres cen [tys. zł]:", min = 151, max = 2500, value = c(151, 2500)),
+                                   width = 3
                       ),
                       mainPanel(leafletOutput("interactive_map", height='80vh')),
              ),
              
              tabPanel("Cena za m\u00B2", icon = icon("magnifying-glass-chart"),
                       sidebarPanel(helpText(tags$h2("Wykresy pudełkowe"), HTML(boxplot_description_string)),
-                        tabsetPanel(selectInput("boxplot_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                                   tabsetPanel(selectInput("boxplot_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
                       mainPanel(plotlyOutput("boxplot", height='70vh'))
              ),
              
              tabPanel("Mapa cieplna", icon = icon("table-cells"),
                       sidebarPanel(helpText(tags$h2("Mapa cieplna macierzy korelacji"), HTML(heatmap_description_string)),
-                        tabsetPanel(selectInput("heatmap_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                                   tabsetPanel(selectInput("heatmap_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
                       mainPanel(plotOutput("heatmap", height='80vh'))
              ),
              
              tabPanel("Porównanie", icon = icon("scale-unbalanced"),
                       sidebarPanel(helpText(tags$h2("Wykresy punktowe"), HTML(comparison_description_string)),
-                        selectInput("comparison_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023"),
-                        selectInput("comparison_dataset_city", label = "Wybierz miasto:", datasets_cities_options, selected = "Wszystkie"),
-                        selectInput("xaxis", label = "Oś x", comparison_plot_features, selected = "squareMeters"),
-                        selectInput("yaxis", label = "Oś y", comparison_plot_features, selected = "price"),
-                        width = 2
+                                   selectInput("comparison_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023"),
+                                   selectInput("comparison_dataset_city", label = "Wybierz miasto:", datasets_cities_options, selected = "Wszystkie"),
+                                   selectInput("xaxis", label = "Oś x", comparison_plot_features, selected = "squareMeters"),
+                                   selectInput("yaxis", label = "Oś y", comparison_plot_features, selected = "price"),
+                                   width = 2
                       ),
                       mainPanel(plotOutput("compare_plot", height='80vh'))
              ),
@@ -289,13 +297,19 @@ ui <- fluidPage(
                       mainPanel(plotOutput("hist", height='70vh'))
              ),
              
+             tabPanel("Obecność windy", icon = icon("elevator"),
+                      sidebarPanel(helpText(tags$h2("Wykresy kolumnowe"), HTML(elevator_description_string)),
+                                   tabsetPanel(selectInput("elevator_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                      mainPanel(plotOutput("elevator_plots", height='80vh'))
+             ),
+             
              tabPanel("Zbiór danych", icon = icon("table"),
                       sidebarPanel(helpText(tags$h2("Tabela"), HTML(table_description_string)),
-                        tabsetPanel(
-                          selectInput("table_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")),
-                          sliderInput("rangeTable", "Wybierz zakres cen [tys. zł]:", min = 151, max = 2500, value = c(151, 2500)),
-                          width = 2
-                        ),
+                                   tabsetPanel(
+                                     selectInput("table_dataset", label = "Wybierz zbiór danych:", datasets_months_options, selected = "Grudzień 2023")),
+                                   sliderInput("rangeTable", "Wybierz zakres cen [tys. zł]:", min = 151, max = 2500, value = c(151, 2500)),
+                                   width = 2
+                      ),
                       mainPanel(dataTableOutput("dataset_table"))
              ),
   )
@@ -539,6 +553,83 @@ server <- function(input, output) {
           outer = TRUE, line = 1.2, cex = 1.8)
   })
   
+  output$elevator_plots <- renderPlot({
+    
+    df <- switch(input$elevator_dataset,
+                 "Sierpień 2023" = df_august,
+                 "Wrzesień 2023" = df_september,
+                 "Październik 2023" = df_october,
+                 "Listopad 2023" = df_november,
+                 "Grudzień 2023" = df_december,
+                 "Styczeń 2024" = df_january,
+                 "Luty 2024" = df_february)
+    
+    # Przygotowanie danych do wykresów dotyczących obecności windy
+    count_buildings_with_elevator <- df %>% 
+      group_by(floorCount, type) %>% 
+      summarise('Frequency' = sum(hasElevator == 'yes'))
+    
+    total_count_with_elevator <- df %>% 
+      group_by(floorCount) %>% 
+      summarise('Frequency' = sum(hasElevator == 'yes'))
+    
+    count_buildings_without_elevator <- df %>%
+      group_by(floorCount, type) %>%
+      summarise('Frequency' = sum(hasElevator == 'no'))
+    
+    total_count_without_elevator <- df %>%
+      group_by(floorCount) %>%
+      summarise('Frequency' = sum(hasElevator == 'no'))
+    
+    # Wykres kolumnowy pokazujący liczbę mieszkań posiadających windę
+    # w zależności od liczby pięter
+    buildings_with_elevator <- ggplot(as.data.frame(count_buildings_with_elevator),
+                                      aes(x = floorCount,
+                                          y = Frequency,
+                                          fill = type)) +
+      geom_col() +
+      ggtitle('Liczba mieszkań posiadających windę w zależności od liczby pięter z podziałem na typ budynku') +
+      labs(x = 'Liczba pięter',
+           y = 'Liczba mieszkań',
+           fill = 'Typ budynku') +
+      scale_x_continuous(breaks = 1:20, limits=c(0, 21)) +
+      geom_text(aes(label = ifelse(Frequency >= 39, Frequency, '')),
+                size = 3.4, position = position_stack(vjust = 0.5)) +
+      geom_text(inherit.aes = FALSE, data = total_count_with_elevator[1:20, ], 
+                aes(x = floorCount, y = Frequency, label = Frequency),
+                size = 3.6, vjust = -0.5)
+    
+    # Wykres kolumnowy pokazujący liczbę mieszkań nieposiadających windy
+    # w zależności od liczby pięter
+    buildings_without_elevator <- ggplot(as.data.frame(count_buildings_without_elevator),
+                                         aes(x = floorCount,
+                                             y = Frequency,
+                                             fill = type)) +
+      geom_col() +
+      ggtitle('Liczba mieszkań nieposiadających windy w zależności od liczby pięter z podziałem na typ budynku') +
+      labs(x = 'Liczba pięter',
+           y = 'Liczba mieszkań',
+           fill = 'Typ budynku') +
+      scale_x_continuous(breaks = 1:20, limits=c(0, 21)) +
+      geom_text(aes(label = ifelse(Frequency >= 114, Frequency, '')),
+                size = 3.4, position = position_stack(vjust = 0.5)) +
+      geom_text(inherit.aes = FALSE, data = total_count_without_elevator[1:20, ], 
+                aes(x = floorCount, y = Frequency, label = Frequency),
+                size = 3.6, vjust = -0.5)
+    
+    # Wyświetlanie dwóch wykresów jeden nad drugim -- wersja z legendą na wykresach
+    # (legenda nie zabiera dodatkowego miejsca)
+    plot_grid(buildings_with_elevator +
+                theme(legend.background = element_rect(color = 'black',
+                                                       fill = 'grey95'),
+                      legend.position = c(0.9, 0.8)),
+              buildings_without_elevator +
+                theme(legend.background = element_rect(color = 'black',
+                                                       fill = 'grey95'),
+                      legend.position = c(0.9, 0.8)),
+              ncol = 1)
+  })
+  
   output$dataset_table <- DT::renderDataTable({
     df <- switch(input$table_dataset,
                  "Sierpień 2023" = df_august,
@@ -562,8 +653,7 @@ server <- function(input, output) {
                                          "Szerokość geograficzna", "Długość gegraficzna", "Odległość od centrum [km]", "Liczba POI",
                                          "Odległość od uczelni [km]", "Cena [zł]", "Populacja", "Udogodnienia"))
   })
-  
-  }
+}
 
 #########################################################
 
