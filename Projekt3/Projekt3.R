@@ -176,6 +176,10 @@ comparison_plot_features_inverse <- c(
 datasets_months_options <- c("Sierpień 2023", "Wrzesień 2023", "Październik 2023",
                              "Listopad 2023", "Grudzień 2023", "Styczeń 2024", "Luty 2024")
 
+datasets_cities_options <-  c("Wszystkie", "Białystok", "Bydgoszcz", "Częstochowa", "Gdańsk",
+                              "Gdynia", "Katowice", "Kraków", "Lublin", "Łódź", "Poznań",
+                              "Radom", "Rzeszów", "Szczecin", "Warszawa", "Wrocław")
+
 
 project_description_string <- "
 <p>Korzystamy ze zbioru danych
@@ -227,8 +231,11 @@ ui <- fluidPage(
              tabPanel("Mapa interaktywna", icon = icon("location-dot"),
                       sidebarPanel(helpText(tags$h2("O projekcie"), HTML(project_description_string)),
                                    helpText(tags$h2("Mapa interaktywna"), HTML(map_description_string)),
-                      tabsetPanel(selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")),
-                      width = 3),
+                      tabsetPanel(
+                        selectInput("leaflet_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")),
+                        sliderInput("rangeMap", "Wybierz zakres cen [tys. zł]:", min = 151, max = 2500, value = c(151, 2500)),
+                        width = 3
+                      ),
                       mainPanel(leafletOutput("interactive_map", height='80vh')),
              ),
              
@@ -247,6 +254,7 @@ ui <- fluidPage(
              tabPanel("Porównanie", icon = icon("scale-unbalanced"),
                       sidebarPanel(
                         selectInput("comparison_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023"),
+                        selectInput("comparison_dataset_city", label = "Wybierz miasto", datasets_cities_options, selected = "Wszystkie"),
                         selectInput("xaxis", label = "Oś x", comparison_plot_features, selected = "squareMeters"),
                         selectInput("yaxis", label = "Oś y", comparison_plot_features, selected = "price"),
                         width = 2
@@ -256,7 +264,12 @@ ui <- fluidPage(
              
              tabPanel("Zbiór danych", icon = icon("table"),
                       sidebarPanel(helpText(tags$h2("Tabela"), HTML(table_description_string)),
-                        tabsetPanel(selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")), width = 2),
+                        tabsetPanel(
+                          selectInput("table_dataset", label = "Wybierz zbiór danych", datasets_months_options, selected = "Grudzień 2023")),
+                          sliderInput("rangeTable", "Wybierz zakres cen [tys. zł]:", min = 151, max = 2500, value = c(151, 2500)),
+                          width = 2
+                        ),
+                      
                       mainPanel(dataTableOutput("dataset_table"))
              ),
   )
@@ -279,6 +292,10 @@ server <- function(input, output) {
                  "Styczeń 2024" = df_january,
                  "Luty 2024" = df_february)
     
+    if(input$comparison_dataset_city != "Wszystkie") {
+      df <- df[df$city == input$comparison_dataset_city, ]
+    }
+    
     ggplot(df, mapping = aes_string(x = input$xaxis, y = input$yaxis)) +
       geom_point(aes(color = type), size = 3, alpha = 0.7) +
       xlab(comparison_plot_features_inverse[input$xaxis]) +
@@ -296,6 +313,7 @@ server <- function(input, output) {
                  "Grudzień 2023" = df_december,
                  "Styczeń 2024" = df_january,
                  "Luty 2024" = df_february)
+    df <- df[df$price>=input$rangeMap[1]*1000 & df$price<=input$rangeMap[2]*1000, ]
     
     leaflet(data = df) %>% 
       addTiles() %>%
@@ -334,6 +352,8 @@ server <- function(input, output) {
     
     df_for_table$latitude <- round(df_for_table$latitude, 2)
     df_for_table$longitude <- round(df_for_table$longitude, 2)
+    
+    df_for_table <- df_for_table[df_for_table$price>=input$rangeTable[1]*1000 & df_for_table$price<=input$rangeTable[2]*1000, ]
     
     datatable(df_for_table, colnames = c("Miasto", "Typ budynku", "Powierzchnia [m\u00B2]", "Liczba pokoi", "Liczba pięter", "Rok budowy",
                                          "Szerokość geograficzna", "Długość gegraficzna", "Odległość od centrum [km]", "Liczba POI",
